@@ -1,4 +1,4 @@
-# ReactThemed
+# React Themed
 
 A simple theme provider for react applications.
 
@@ -38,7 +38,7 @@ export default class App extends Component {
 
 **Step 3.** Use the `themed` decorator to merge parts of the theme into a component's props.
 ```javascript
-import React, { Component } from 'react'
+import React, { Component, PropTypes } from 'react'
 import { themed } from 'react-themed'
 
 @themed(theme => ({
@@ -46,7 +46,7 @@ import { themed } from 'react-themed'
 }))
 
 export default class Button extends Component {
-  const propTypes = {
+  static propTypes = {
     size: PropTypes.oneOf([
       'small',
       'large',

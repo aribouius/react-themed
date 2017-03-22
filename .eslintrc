@@ -1,0 +1,19 @@
+{
+  "parser": "babel-eslint",
+  "extends": "airbnb-base",
+  "rules": {
+    "semi": [2, "never"],
+    "arrow-parens": [2, "as-needed"],
+    "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],
+    "react/jsx-uses-react": 1,
+    "react/jsx-uses-vars": 1,
+  },
+  "plugins": [
+    "react"
+  ],
+  "env": {
+    "mocha": true,
+    "browser": true,
+    "node": true
+  }
+}

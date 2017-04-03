@@ -25,4 +25,30 @@ describe('composeTheme', () => {
       },
     })
   })
+
+  it('composes theme functions', () => {
+    const theme1 = { foo: () => '.foo{}' }
+    const theme2 = { foo: () => '.bar{}' }
+    const result = composeTheme(theme1, theme2)
+    expect(result.foo()).to.eql('.foo{}.bar{}')
+  })
+
+  it('only composes similar value types', () => {
+    const theme1 = { foo: 'foo', bar: 'bar' }
+    const theme2 = { foo: {}, bar: () => {} }
+    const result = composeTheme(theme1, theme2)
+    expect(result).to.eql({
+      foo: 'foo',
+      bar: 'bar',
+    })
+  })
+
+  it('strips out null values', () => {
+    const theme1 = { foo: null }
+    const theme2 = { bar: 'bar' }
+    const result = composeTheme(theme1, theme2)
+    expect(result).to.eql({
+      bar: 'bar',
+    })
+  })
 })

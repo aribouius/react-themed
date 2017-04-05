@@ -1,5 +1,4 @@
 import { PureComponent, PropTypes, Children } from 'react'
-import deepMerge from 'lodash.merge'
 import composeTheme from './composeTheme'
 
 export default class ThemeProvider extends PureComponent {
@@ -9,13 +8,11 @@ export default class ThemeProvider extends PureComponent {
 
   static propTypes = {
     theme: PropTypes.object.isRequired,
-    merge: PropTypes.oneOfType([PropTypes.bool, PropTypes.func]),
-    compose: PropTypes.bool,
+    compose: PropTypes.oneOfType([PropTypes.bool, PropTypes.func]),
     children: PropTypes.element.isRequired,
   }
 
   static defaultProps = {
-    merge: false,
     compose: false,
   }
 
@@ -25,16 +22,14 @@ export default class ThemeProvider extends PureComponent {
 
   getChildContext() {
     let theme = this.props.theme
-    const { merge, compose } = this.props
+    const { compose } = this.props
     const parentTheme = this.context.theme
 
     if (parentTheme) {
-      if (compose) {
+      if (typeof compose === 'function') {
+        theme = compose(parentTheme, theme)
+      } else if (compose) {
         theme = composeTheme(parentTheme, theme)
-      } else if (typeof merge === 'function') {
-        theme = merge(parentTheme, theme)
-      } else if (merge) {
-        theme = deepMerge({}, parentTheme, theme)
       }
     }
 

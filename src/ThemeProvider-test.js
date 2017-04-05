@@ -31,25 +31,7 @@ describe('ThemeProvider', () => {
     })
   })
 
-  it('merges themes', () => {
-    const theme1 = { foo: 'foo', bar: 'bar' }
-    const theme2 = { foo: 'bar' }
-
-    const wrapper = mount(
-      <Theme theme={theme1}>
-        <Theme theme={theme2} merge>
-          <Foo />
-        </Theme>
-      </Theme>,
-    )
-
-    expect(wrapper.find(Foo).get(0).context.theme).to.eql({
-      foo: 'bar',
-      bar: 'bar',
-    })
-  })
-
-  it('merges themes using a custom merge function', () => {
+  it('merges themes using a provided function', () => {
     const merge = (parent, child) => ({
       ...parent,
       ...child,
@@ -61,7 +43,7 @@ describe('ThemeProvider', () => {
 
     const wrapper = mount(
       <Theme theme={theme1}>
-        <Theme theme={theme2} merge={merge}>
+        <Theme theme={theme2} compose={merge}>
           <Foo />
         </Theme>
       </Theme>,

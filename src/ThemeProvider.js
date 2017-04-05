@@ -20,7 +20,18 @@ export default class ThemeProvider extends PureComponent {
     theme: PropTypes.object,
   }
 
-  getChildContext() {
+  constructor(props, context) {
+    super(props, context)
+    this.theme = this.composeTheme()
+  }
+
+  componentWillReceiveProps(props) {
+    if (this.props.theme !== props.theme) {
+      this.theme = this.composeTheme()
+    }
+  }
+
+  composeTheme() {
     let theme = this.props.theme
     const { compose } = this.props
     const parentTheme = this.context.theme
@@ -33,9 +44,11 @@ export default class ThemeProvider extends PureComponent {
       }
     }
 
-    return {
-      theme,
-    }
+    return theme
+  }
+
+  getChildContext() {
+    return { theme: this.theme }
   }
 
   render() {

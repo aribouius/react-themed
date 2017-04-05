@@ -1,6 +1,7 @@
 import React, { PropTypes } from 'react'
 import { expect } from 'chai'
 import { mount } from 'enzyme'
+import sinon from 'sinon'
 import Theme from './ThemeProvider'
 
 describe('ThemeProvider', () => {
@@ -19,11 +20,8 @@ describe('ThemeProvider', () => {
     const theme2 = { foo: 'bar' }
 
     const wrapper = mount(
-      <Theme theme={theme1}>
-        <Theme theme={theme2} compose>
-          <Foo />
-        </Theme>
-      </Theme>,
+      <Theme theme={theme2} compose children={<Foo />} />,
+      { context: { theme: theme1 } },
     )
 
     expect(wrapper.find(Foo).get(0).context.theme).to.eql({
@@ -42,11 +40,8 @@ describe('ThemeProvider', () => {
     const theme2 = { bar: 'bar' }
 
     const wrapper = mount(
-      <Theme theme={theme1}>
-        <Theme theme={theme2} compose={merge}>
-          <Foo />
-        </Theme>
-      </Theme>,
+      <Theme theme={theme2} compose={merge} children={<Foo />} />,
+      { context: { theme: theme1 } },
     )
 
     expect(wrapper.find(Foo).get(0).context.theme).to.eql({
@@ -54,5 +49,23 @@ describe('ThemeProvider', () => {
       bar: 'bar',
       baz: 'baz',
     })
+  })
+
+  it('only composes themes when theme prop changes', () => {
+    const theme = { foo: 'bar' }
+    const merge = sinon.spy(() => ({}))
+
+    const wrapper = mount(
+      <Theme theme={theme} compose={merge} children={<Foo />} />,
+      { context: { theme: {} } },
+    )
+
+    expect(merge.callCount).to.equal(1)
+
+    wrapper.setProps({ theme })
+    expect(merge.callCount).to.equal(1)
+
+    wrapper.setProps({ theme: {} })
+    expect(merge.callCount).to.equal(2)
   })
 })

@@ -56,4 +56,14 @@ describe('themed', () => {
       theme: context.theme,
     })
   })
+
+  describe('setDefaults', () => {
+    it('assigns default global options for `themed`', () => {
+      themed.setDefaults({ propName: 'foo' })
+      const Bar = themed('Foo')(Foo)
+      const wrapper = shallow(<Bar />, { context })
+      expect(wrapper.find(Foo).prop('foo')).to.eql(context.theme.Foo)
+      themed.setDefaults({ propName: 'theme' })
+    })
+  })
 })

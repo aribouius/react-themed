@@ -1,9 +1,18 @@
 import { createElement, PropTypes } from 'react'
 import themeContext from './themeContext'
 
-const mergeProps = (ownProps, themeProps) => (
-  { ...themeProps, ...ownProps }
-)
+const mergeProps = (
+  ownProps,
+  themeProps,
+) => ({
+  ...themeProps,
+  ...ownProps,
+})
+
+const defaultOptions = {
+  mergeProps,
+  propName: 'theme',
+}
 
 const selectTheme = (selector, theme) => {
   switch (typeof selector) {
@@ -16,10 +25,9 @@ const selectTheme = (selector, theme) => {
   }
 }
 
-export default (selector, options) => target => {
+const themed = (selector, options) => target => {
   const config = {
-    mergeProps,
-    propName: 'theme',
+    ...defaultOptions,
     ...options,
   }
 
@@ -36,3 +44,9 @@ export default (selector, options) => target => {
     },
   })
 }
+
+themed.setDefaults = options => {
+  Object.assign(defaultOptions, options)
+}
+
+export default themed

@@ -8,7 +8,7 @@ $ npm i --save react-themed
 ```
 
 ## Usage
-**Step 1.** Compose a theme for your application, using [CSS Modules](https://github.com/css-modules/css-modules) or inline styles.
+**Step 1.** Compose a theme for your application, using [CSS Modules](https://github.com/css-modules/css-modules), [JSS](https://github.com/cssinjs/jss), or any other library that generates a mapping of classname references. The theme shape is optional, but we find namespacing styles by component name works well.
 ```javascript
 const theme = {
   Button: {
@@ -18,30 +18,25 @@ const theme = {
 }
 ```
 
-**Step 2.** Use the `ThemeProvider` component to provide access to the theme via context.
+**Step 2.** Use the `ThemeProvider` component to make the theme available via context.
 ```javascript
-import React from 'react'
 import { render } from 'react-dom'
 import { ThemeProvider } from 'react-themed'
+import MyRootComponent from './MyRootComponent'
 import theme from './theme'
-import App from './App'
 
 render(
   <ThemeProvider theme={theme}>
-    <App />
+    <MyRootComponent />
   </ThemeProvider>,
   document.getElementById('root')
 )
 ```
 
-**Step 3.** Use the `themed` decorator to merge parts of the theme into a component's props.
+**Step 3.** Create a component that defines a theme interface, and generate a _themed_ version of it by using the `themed` decorator to select which part(s) of the context theme should be provided as a prop.
 ```javascript
 import React, { Component, PropTypes } from 'react'
 import { themed } from 'react-themed'
-
-@themed(theme => ({
-  styles: theme.Button,
-}))
 
 export default class Button extends Component {
   static propTypes = {
@@ -49,7 +44,7 @@ export default class Button extends Component {
       'small',
       'large',
     ]),
-    styles: PropTypes.shape({
+    theme: PropTypes.shape({
       small: PropTypes.string,
       large: PropTypes.string,
     }),
@@ -58,32 +53,40 @@ export default class Button extends Component {
   render() {
     const {
       size = 'small',
-      styles,
+      theme,
       ...props,
     } = this.props
 
     return (
       <button
         {...props}
-        className={styles[size]}
+        className={theme[size]}
       />
     )
   }
 }
+
+// select theme by name
+export const ThemedButton = themed('Button')(Button)
+
+// or pluck it out yourself
+export const ThemedButton = themed(theme => theme.Button)(Button)
 ```
 
 ## API
-### `<ThemeProvider theme>`
-Adds a theme to the context of a component tree, making it available to `themed()` calls.
+### `<ThemeProvider theme [compose]>`
+Adds a theme to the context of a component tree, making it available to `themed()` calls.  Optionally composes provided theme with theme(s) already added to the context by a separate `ThemeProvider` higher up.
 
-### `themed([mapThemeToProps], [mergeProps])`
-Returns a new _themed_ wrapped component (HOC).
+### `themed([theme], [options])`
+Creates a new [HOC](https://facebook.github.io/react/docs/higher-order-components.html) that returns a _themed_ component.
 
-- [`mapThemeToProps(theme): props`] \(*Function*): If specified, the new component will call this function to pluck/map parts of the theme context.  The results of `mapThemeToProps` must be a plain object, which will be merged into the component’s props. If omitted the entire theme will be added to the component's props via a `theme` key.
-- [`mergeProps(ownProps, themeProps): props`] \(*Function*): If specified, it is passed the parent props and the result of `mapThemeToProps()`. The returned plain object is passed as props to the wrapped component.
+- [`identifier|selector(theme):theme`] \(*String|Function*): A string identifier, or selector function, used to pluck out parts of the context theme that should be provided as a prop to the component.  If not specified, the entire context theme is provided.
+- [`options`] \(*Object*): A configuration object.
+  - [`propName = "theme"`] \(*String*): The name of the prop the theme gets assigned to.
+  - [`mergeProps(ownProps, themeProps): props`] \(*Function*): If specified, it is passed the parent props and an object containing the theme prop. The returned plain object is passed as props to the wrapped component.
 
 ### `composeTheme(...themes)`
-Recursively merges CSS Module theme objects. Values for overlapping keys are concatenated.
+Recursively merges theme objects. Values for overlapping keys are concatenated.
 
 ## License
 MIT

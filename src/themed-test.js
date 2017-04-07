@@ -31,11 +31,34 @@ describe('themed', () => {
     expect(wrapper.find(Foo).prop('bar')).to.equal('bar')
   })
 
-  it('allows theme prop override', () => {
+  it('overrides theme prop by default', () => {
     const Bar = themed()(Foo)
     const theme = { bar: 'bar' }
     const wrapper = shallow(<Bar theme={theme} />, { context })
     expect(wrapper.find(Foo).prop('theme')).to.eql(theme)
+  })
+
+  it('can be configured to compose passed in theme', () => {
+    const Bar = themed('Foo')(Foo)
+    const theme = { foo: 'bar' }
+    const config = { compose: true }
+    const wrapper = shallow(<Bar theme={theme} themeConfig={config} />, { context })
+    expect(wrapper.find(Foo).prop('theme')).to.eql({
+      foo: 'foo bar',
+    })
+  })
+
+  it('can be configured to compose passed in theme using a custom function', () => {
+    const Bar = themed('Foo')(Foo)
+    const theme = { bar: 'bar' }
+    const merge = (...args) => Object.assign({ baz: 'baz' }, ...args)
+    const config = { compose: merge }
+    const wrapper = shallow(<Bar theme={theme} themeConfig={config} />, { context })
+    expect(wrapper.find(Foo).prop('theme')).to.eql({
+      foo: 'foo',
+      bar: 'bar',
+      baz: 'baz',
+    })
   })
 
   it('supports custom theme prop name', () => {

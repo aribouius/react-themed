@@ -22,29 +22,27 @@ export default class ThemeProvider extends PureComponent {
 
   constructor(props, context) {
     super(props, context)
-    this.theme = this.buildTheme(props, context)
+    this.buildTheme(props, context)
   }
 
   componentWillReceiveProps(props, context) {
     if (this.context.theme !== context.theme || this.props.theme !== props.theme) {
-      this.theme = this.buildTheme(props, context)
+      this.buildTheme(props, context)
     }
   }
 
   buildTheme(props, context) {
-    let theme = props.theme
+    this.theme = props.theme
     const { compose } = this.props
     const parentTheme = context.theme
 
     if (parentTheme) {
       if (typeof compose === 'function') {
-        theme = compose(parentTheme, theme)
+        this.theme = compose(parentTheme, this.theme)
       } else if (compose) {
-        theme = composeTheme(parentTheme, theme)
+        this.theme = composeTheme(parentTheme, this.theme)
       }
     }
-
-    return theme
   }
 
   getChildContext() {

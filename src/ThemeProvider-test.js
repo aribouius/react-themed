@@ -51,7 +51,7 @@ describe('ThemeProvider', () => {
     })
   })
 
-  it('only composes themes when theme prop changes', () => {
+  it('caches composed themes between renders', () => {
     const theme = { foo: 'bar' }
     const merge = sinon.spy(() => ({}))
 
@@ -60,10 +60,35 @@ describe('ThemeProvider', () => {
       { context: { theme: {} } },
     )
 
-    expect(merge.callCount).to.equal(1)
-
     wrapper.setProps({ theme })
+    wrapper.setProps({ theme })
+
     expect(merge.callCount).to.equal(1)
+  })
+
+  it('rebuilds theme when theme prop is changed', () => {
+    const theme = { foo: 'bar' }
+    const merge = sinon.spy(() => ({}))
+
+    const wrapper = mount(
+      <Theme theme={theme} compose={merge} children={<Foo />} />,
+      { context: { theme: {} } },
+    )
+
+    wrapper.setProps({ theme: {} })
+    expect(merge.callCount).to.equal(2)
+  })
+
+  it('rebuilds theme when theme context is changed', () => {
+    const theme1 = { foo: 'foo' }
+    const theme2 = { bar: 'bar' }
+    const merge = sinon.spy(() => ({}))
+
+    const wrapper = mount(
+      <Theme theme={theme1}>
+        <Theme theme={theme2} compose={merge} children={<Foo />} />
+      </Theme>,
+    )
 
     wrapper.setProps({ theme: {} })
     expect(merge.callCount).to.equal(2)

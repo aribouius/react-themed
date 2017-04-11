@@ -95,7 +95,7 @@ The *themed* component that gets created by the `themed` decorator.
   - [`compose`] \(*Bool*): Overrides the default `compose` configuration.
 
 ### `composeTheme(...themes)`
-Recursively merges theme objects. Values for overlapping keys are concatenated.
+Recursively merges theme objects by concatenating string values for overlapping keys.
 
 ## License
 MIT

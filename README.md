@@ -1,6 +1,6 @@
 # React Themed
 
-A simple theme provider for react applications.
+A simple theme provider and composition utility for react applications.
 
 ## Installation
 ```bash
@@ -8,17 +8,25 @@ $ npm i --save react-themed
 ```
 
 ## Usage
-**Step 1.** Compose a theme for your application, using [CSS Modules](https://github.com/css-modules/css-modules), [JSS](https://github.com/cssinjs/jss), or any other library that generates a mapping of classname references. The theme shape is optional, but we find namespacing styles by component name works well.
+**Step 1.**  Create a base theme for your application, using [CSS Modules](https://github.com/css-modules/css-modules), [JSS](https://github.com/cssinjs/jss), or any other library that generates a mapping of classname references. The theme shape is optional, but we find namespacing styles by component name works well.
 ```javascript
 const theme = {
+  Form: {
+    default: 'form',
+  },
+  Input: {
+    default: 'input',
+    invalid: 'input-invalid',
+  },
   Button: {
-    small: '.btn-small',
-    large: '.btn-large',
+    default: 'btn',
+    primary: 'btn-primary',
+    success: 'btn-success',
   },
 }
 ```
 
-**Step 2.** Use the `ThemeProvider` component to make the theme available via context.
+**Step 2.**  Use the `ThemeProvider` component to make the base theme available via context.
 ```javascript
 import { ThemeProvider } from 'react-themed'
 import theme from './theme'
@@ -30,49 +38,46 @@ const App = (props) => (
 )
 ```
 
-**Step 3.** Create a component that defines a theme interface, and export a _themed_ version of it by using the `themed` decorator to select which part(s) of the context theme should be provided as a prop.
+**Step 3.**  Create *themed* components by using the `themed` decorator to select which part(s) of the base theme
+the component should receive as a `theme` prop.
+
 ```javascript
-import React, { Component, PropTypes } from 'react'
+import React from 'react'
 import { themed } from 'react-themed'
 
-export default class Button extends Component {
-  static propTypes = {
-    size: PropTypes.oneOf([
-      'small',
-      'large',
-    ]),
-    theme: PropTypes.shape({
-      small: PropTypes.string,
-      large: PropTypes.string,
-    }),
-  }
-
-  render() {
-    const {
-      size = 'small',
-      theme,
-      ...props,
-    } = this.props
-
-    return (
-      <button
-        {...props}
-        className={theme[size]}
-      />
-    )
-  }
-}
-
 // select theme by name
-export const ThemedButton = themed('Button')(Button)
+@themed('Button')
+const Button = ({ theme, color, ...props }) => (
+  <button
+    {...props}
+    className={theme[color || 'default']}
+  />
+)
 
-// or pluck it out yourself
-export const ThemedButton = themed(theme => theme.Button)(Button)
+// select theme via callback
+@themed(theme => theme.Input)
+const Input = ({ theme, invalid, ...props }) => (
+  <input
+    {...props}
+    className={invalid ? theme.invalid : theme.default}
+  />
+)
+
+// receive entire base theme
+@themed()
+const Form = ({ theme, ...props }) => (
+  <form {...props} className={theme.Form.default}>
+    <Input type="text" />
+    <Button type="submit">Submit</Button>
+  </form>
+)
 ```
 
 ## API
 ### `<ThemeProvider theme [compose]>`
-Adds a theme to the context of a component tree, making it available to `themed()` calls.  Optionally composes provided theme with theme(s) already added to the context by a separate `ThemeProvider` higher up the tree.  *Note:* This also gets exported under a `Theme` alias.
+Adds a theme to the context of a component tree, making it available to `themed()` calls. *Note:* This also gets exported under a `Theme` alias.
+- [`theme`] \(*Object*): The theme object.
+- [`compose = false`] \(*Bool*): When `true`, the provided theme will get composed with any themes already added to the context via separate `ThemeProvider` components higher up the tree.
 
 ### `themed([theme], [options])`
 Creates a new [HOC](https://facebook.github.io/react/docs/higher-order-components.html) that returns a `Themed` component.
@@ -80,16 +85,14 @@ Creates a new [HOC](https://facebook.github.io/react/docs/higher-order-component
 - [`identifier|selector(theme):theme`] \(*String|Function*): A string identifier, or selector function, used to pluck out parts of the context theme that should be provided as a prop to the component.  If not specified, the entire context theme is provided.
 - [`options`] \(*Object*): Configures the default options for the `Themed` component.
   - [`propName = "theme"`] \(*String*): The name of the prop the theme gets assigned to.
-  - [`compose = false`] \(*Bool|Func*): Specifies how to handle a prop passed to the `Themed` component that matches the configured `propName`.  When `false`, the prop replaces the context theme.  When `true`, the two themes get composed.  If the prop is a function, it is passed the prop theme and the context theme, and is expected to return a merged plain object.
+  - [`compose = false`] \(*Bool|Func*): Specifies default behavior for handling a prop passed to the `Themed` component that matches the configured `propName`.  When `false`, the prop replaces the context theme.  When `true`, the two themes get composed.  If the prop is a function, it is passed the prop theme and the context theme, and is expected to return a merged plain object.
   - [`mergeProps(ownProps, themeProps): props`] \(*Function*): If specified, it is passed the parent props and an object containing the theme prop. The returned plain object is passed as props to the wrapped component.
-
-### `themed.setDefaults(options)`
-Sets the default options provided by the `themed` decorator globally.
 
 ### `<Themed [theme] [themeConfig]>`
 The *themed* component that gets created by the `themed` decorator.
-- [`theme`] \(*Object*): A custom theme to replace or compose with the context theme.
-- [`themeConfig`] \(*Object*): A configuration object that overrides the components default options.
+- [`theme`] \(*Object*): A custom theme that either replaces the context theme, or composes it, depending on whether the `compose` option is enabled.
+- [`themeConfig`] \(*Object*): A configuration object whose values override the default theming options applied to the component.
+  - [`compose`] \(*Bool*): Overrides the default `compose` configuration.
 
 ### `composeTheme(...themes)`
 Recursively merges theme objects. Values for overlapping keys are concatenated.

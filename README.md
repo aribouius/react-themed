@@ -38,8 +38,7 @@ const App = (props) => (
 )
 ```
 
-**Step 3.**  Create *themed* components by using the `themed` decorator to select which part(s) of the base theme
-the component should receive as a `theme` prop.
+**Step 3.**  Create components that define a theme interface, and use the `themed` decorator to select which part(s) of the base theme they should receive as a `theme` prop.
 
 ```javascript
 import React from 'react'
@@ -77,22 +76,21 @@ const Form = ({ theme, ...props }) => (
 ### `<ThemeProvider theme [compose]>`
 Adds a theme to the context of a component tree, making it available to `themed()` calls. *Note:* This also gets exported under a `Theme` alias.
 - [`theme`] \(*Object*): The theme object.
-- [`compose = false`] \(*Bool*): When `true`, the provided theme will get composed with any themes already added to the context via separate `ThemeProvider` components higher up the tree.
+- [`compose`] \(*Bool*): Specifies that the provided theme should be composed with any themes already added to the context via separate `ThemeProvider` components higher up the tree.
 
 ### `themed([theme], [options])`
 Creates a new [HOC](https://facebook.github.io/react/docs/higher-order-components.html) that returns a `Themed` component.
 
 - [`identifier|selector(theme):theme`] \(*String|Function*): A string identifier, or selector function, used to pluck out parts of the context theme that should be provided as a prop to the component.  If not specified, the entire context theme is provided.
 - [`options`] \(*Object*): Configures the default options for the `Themed` component.
-  - [`propName = "theme"`] \(*String*): The name of the prop the theme gets assigned to.
-  - [`compose = false`] \(*Bool|Func*): Specifies default behavior for handling a prop passed to the `Themed` component that matches the configured `propName`.  When `false`, the prop replaces the context theme.  When `true`, the two themes get composed.  If the prop is a function, it is passed the prop theme and the context theme, and is expected to return a merged plain object.
+  - [`propName`] \(*String*): The name of the prop the theme gets assigned to, defaults to `theme`.
+  - [`compose`] \(*Bool|Func*): Specifies default behavior for handling a prop passed to the `Themed` component that matches the configured `propName`.  When `false` (default), the prop replaces the context theme.  When `true`, the two themes get composed.  If the prop is a function, it is passed the prop theme and the context theme, and is expected to return a merged plain object.
   - [`mergeProps(ownProps, themeProps): props`] \(*Function*): If specified, it is passed the parent props and an object containing the theme prop. The returned plain object is passed as props to the wrapped component.
 
 ### `<Themed [theme] [themeConfig]>`
 The *themed* component that gets created by the `themed` decorator.
 - [`theme`] \(*Object*): A custom theme that either replaces the context theme, or composes it, depending on whether the `compose` option is enabled.
-- [`themeConfig`] \(*Object*): A configuration object whose values override the default theming options applied to the component.
-  - [`compose`] \(*Bool*): Overrides the default `compose` configuration.
+- [`themeConfig`] \(*Object*): A configuration object used to override the component's default theme options.
 
 ### `composeTheme(...themes)`
 Recursively merges theme objects by concatenating string values for overlapping keys.

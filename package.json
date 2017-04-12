@@ -1,6 +1,7 @@
 {
   "name": "react-themed",
-  "version": "2.1.0",
+  "description": "A simple theme provider and composition utility for react applications.",
+  "version": "2.2.0",
   "main": "index.js",
   "license": "MIT",
   "homepage": "https://github.com/aribouius/react-themed",
@@ -52,6 +53,8 @@
   "keywords": [
     "react",
     "theme",
-    "theming"
+    "theming",
+    "css",
+    "modules"
   ]
 }

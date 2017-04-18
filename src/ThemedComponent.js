@@ -1,4 +1,5 @@
-import { createElement, Component, PropTypes } from 'react'
+import { createElement, Component } from 'react'
+import PropTypes from 'prop-types'
 import composeTheme from './composeTheme'
 
 export default class ThemedComponent extends Component {

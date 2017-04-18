@@ -1,4 +1,5 @@
-import { PureComponent, PropTypes, Children } from 'react'
+import { PureComponent, Children } from 'react'
+import PropTypes from 'prop-types'
 import composeTheme from './composeTheme'
 
 export default class ThemeProvider extends PureComponent {

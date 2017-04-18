@@ -45,7 +45,8 @@
     "sinon": "^2.1.0"
   },
   "dependencies": {
-    "babel-runtime": "^6.23.0"
+    "babel-runtime": "^6.23.0",
+    "prop-types": "^15.5.8"
   },
   "peerDependencies": {
     "react": "^15.4.2"

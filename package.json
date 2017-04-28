@@ -24,7 +24,7 @@
   "devDependencies": {
     "babel-cli": "^6.24.0",
     "babel-core": "^6.24.0",
-    "babel-eslint": "^7.2.0",
+    "babel-eslint": "^7.2.3",
     "babel-plugin-transform-class-properties": "^6.23.0",
     "babel-plugin-transform-object-rest-spread": "^6.23.0",
     "babel-plugin-transform-runtime": "^6.23.0",
@@ -38,10 +38,11 @@
     "eslint-plugin-react": "^6.10.3",
     "jsdom": "^9.12.0",
     "jsdom-global": "^2.1.1",
-    "mocha": "^3.2.0",
-    "react": "^15.4.2",
+    "mocha": "^3.3.0",
+    "react": "^15.5.4",
     "react-addons-test-utils": "^15.4.2",
     "react-dom": "^15.4.2",
+    "react-test-renderer": "^15.5.4",
     "sinon": "^2.1.0"
   },
   "dependencies": {

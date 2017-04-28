@@ -5,24 +5,36 @@ import themed from './themed'
 
 describe('themed', () => {
   const Foo = () => null
-  const context = { theme: { Foo: { foo: 'foo' } } }
+  const context = {
+    theme: {
+      Foo: { foo: 'foo' },
+      Bar: { bar: 'bar' },
+    },
+  }
 
-  it('provides context theme as `theme` prop', () => {
+  it('passes context theme as `theme` prop', () => {
     const Bar = themed()(Foo)
     const wrapper = shallow(<Bar />, { context })
     expect(wrapper.find(Foo).prop('theme')).to.eql(context.theme)
   })
 
-  it('accepts string theme selector', () => {
+  it('handles string theme selector', () => {
     const Bar = themed('Foo')(Foo)
     const wrapper = shallow(<Bar />, { context })
     expect(wrapper.find(Foo).prop('theme')).to.eql(context.theme.Foo)
   })
 
-  it('accepts function theme selector', () => {
+  it('handles function theme selector', () => {
     const Bar = themed(theme => theme.Foo)(Foo)
     const wrapper = shallow(<Bar />, { context })
     expect(wrapper.find(Foo).prop('theme')).to.eql(context.theme.Foo)
+  })
+
+  it('handles object theme selector', () => {
+    const theme = { baz: 'baz' }
+    const Bar = themed(theme)(Foo)
+    const wrapper = shallow(<Bar />, { context })
+    expect(wrapper.find(Foo).prop('theme')).to.eql(theme)
   })
 
   it('passes through props', () => {

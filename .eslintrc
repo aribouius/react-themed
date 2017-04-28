@@ -4,6 +4,7 @@
   "rules": {
     "semi": [2, "never"],
     "arrow-parens": [2, "as-needed"],
+    "no-nested-ternary": [0],
     "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],
     "react/jsx-uses-react": 1,
     "react/jsx-uses-vars": 1,

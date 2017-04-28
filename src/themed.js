@@ -16,13 +16,19 @@ const defaultOptions = {
 }
 
 const themeSelector = selector => {
-  switch (typeof selector) {
+  const type = selector
+    ? Array.isArray(selector) ? 'array' : typeof selector
+    : 'undefined'
+
+  switch (type) {
     case 'function':
       return selector
     case 'string':
-      return theme => theme[selector]
+      return ctx => ctx[selector]
+    case 'object':
+      return () => selector
     default:
-      return theme => theme
+      return ctx => ctx
   }
 }
 

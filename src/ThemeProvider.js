@@ -4,10 +4,6 @@ import composeTheme from './composeTheme'
 import { CONTEXT_KEY } from './const'
 
 export default class ThemeProvider extends PureComponent {
-  static contextTypes = {
-    [CONTEXT_KEY]: PropTypes.object,
-  }
-
   static propTypes = {
     theme: PropTypes.oneOfType([PropTypes.object, PropTypes.func]).isRequired,
     compose: PropTypes.bool,
@@ -18,6 +14,10 @@ export default class ThemeProvider extends PureComponent {
     compose: true,
   }
 
+  static contextTypes = {
+    [CONTEXT_KEY]: PropTypes.object,
+  }
+  
   static childContextTypes = {
     [CONTEXT_KEY]: PropTypes.object,
   }

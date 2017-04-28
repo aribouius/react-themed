@@ -1,24 +1,25 @@
 import { PureComponent, Children } from 'react'
 import PropTypes from 'prop-types'
 import composeTheme from './composeTheme'
+import { CONTEXT_KEY } from './const'
 
 export default class ThemeProvider extends PureComponent {
   static contextTypes = {
-    theme: PropTypes.object,
+    [CONTEXT_KEY]: PropTypes.object,
   }
 
   static propTypes = {
-    theme: PropTypes.object.isRequired,
-    compose: PropTypes.oneOfType([PropTypes.bool, PropTypes.func]),
+    theme: PropTypes.oneOfType([PropTypes.object, PropTypes.func]).isRequired,
+    compose: PropTypes.bool,
     children: PropTypes.element.isRequired,
   }
 
   static defaultProps = {
-    compose: false,
+    compose: true,
   }
 
   static childContextTypes = {
-    theme: PropTypes.object,
+    [CONTEXT_KEY]: PropTypes.object,
   }
 
   constructor(props, context) {
@@ -26,28 +27,27 @@ export default class ThemeProvider extends PureComponent {
     this.buildTheme(props, context)
   }
 
-  componentWillReceiveProps(props, context) {
-    if (this.context.theme !== context.theme || this.props.theme !== props.theme) {
+  componentWillUpdate(props, state, context) {
+    if (this.context[CONTEXT_KEY] !== context[CONTEXT_KEY] || this.props.theme !== props.theme) {
       this.buildTheme(props, context)
     }
   }
 
   buildTheme(props, context) {
-    this.theme = props.theme
-    const { compose } = this.props
-    const parentTheme = context.theme
+    const { theme, compose } = props
+    const { [CONTEXT_KEY]: parentTheme } = context
 
-    if (parentTheme) {
-      if (typeof compose === 'function') {
-        this.theme = compose(parentTheme, this.theme)
-      } else if (compose) {
-        this.theme = composeTheme(parentTheme, this.theme)
-      }
+    if (typeof theme === 'function') {
+      this.theme = theme(parentTheme)
+    } else if (parentTheme && compose) {
+      this.theme = composeTheme(parentTheme, theme)
+    } else {
+      this.theme = theme
     }
   }
 
   getChildContext() {
-    return { theme: this.theme }
+    return { [CONTEXT_KEY]: this.theme }
   }
 
   render() {

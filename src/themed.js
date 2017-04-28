@@ -1,34 +1,37 @@
+import { createElement, Component, PureComponent } from 'react'
 import PropTypes from 'prop-types'
-import ThemedComponent from './ThemedComponent'
+import composeTheme from './composeTheme'
+import { CONTEXT_KEY } from './const'
 
 const mergeProps = (
   ownProps,
   themeProps,
 ) => ({
-  ...themeProps,
   ...ownProps,
+  ...themeProps,
 })
 
 const defaultOptions = {
   mergeProps,
-  compose: false,
+  pure: false,
+  compose: true,
   propName: 'theme',
 }
 
-const themeSelector = selector => {
+const getTheme = (selector, context) => {
   const type = selector
     ? Array.isArray(selector) ? 'array' : typeof selector
     : 'undefined'
 
   switch (type) {
     case 'function':
-      return selector
+      return selector(context)
     case 'string':
-      return ctx => ctx[selector]
+      return context[selector]
     case 'object':
-      return () => selector
+      return selector
     default:
-      return ctx => ctx
+      return context
   }
 }
 
@@ -36,26 +39,59 @@ const themed = (selector, options) => component => {
   const config = {
     ...defaultOptions,
     ...options,
-    selectTheme: themeSelector(selector),
-    component,
   }
 
-  Object.assign(config, {
-    configKey: `${config.propName}Config`,
-  })
+  const BaseComponent = config.pure
+    ? PureComponent
+    : Component
 
-  return class Themed extends ThemedComponent {
+  return class Themed extends BaseComponent {
     static displayName = `Themed(${component.displayName || component.name})`
 
-    static themeConfig = config
-
-    static propTypes = {
-      [config.propName]: PropTypes.object,
-      [config.configKey]: PropTypes.object,
+    static contextTypes = {
+      [CONTEXT_KEY]: PropTypes.object,
     }
 
-    static defaultProps = {
-      [config.configKey]: {},
+    static propTypes = {
+      [config.propName]: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
+    }
+
+    constructor(props, context) {
+      super(props, context)
+      this.buildTheme(props, context)
+    }
+
+    componentWillUpdate(props, state, context) {
+      if (this.propsChanged(props) || this.contextChanged(context)) {
+        this.buildTheme(props, context)
+      }
+    }
+
+    propsChanged(props) {
+      return this.props[config.propName] !== props[config.propName]
+    }
+
+    contextChanged(context) {
+      return this.context[CONTEXT_KEY] !== context[CONTEXT_KEY]
+    }
+
+    buildTheme(props, context) {
+      const base = context[CONTEXT_KEY] || {}
+      const prop = props[config.propName]
+
+      this.theme = getTheme(selector, base)
+
+      if (typeof prop === 'function') {
+        this.theme = prop(this.theme, base)
+      } else if (prop) {
+        this.theme = config.compose ? composeTheme(this.theme, prop) : prop
+      }
+    }
+
+    render() {
+      return createElement(component, config.mergeProps(this.props, {
+        [config.propName]: this.theme,
+      }))
     }
   }
 }

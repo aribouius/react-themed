@@ -4,94 +4,120 @@ import { expect } from 'chai'
 import { mount } from 'enzyme'
 import sinon from 'sinon'
 import Theme from './ThemeProvider'
+import { CONTEXT_KEY } from './const'
 
 describe('ThemeProvider', () => {
+  const theme1 = { foo: 'foo', bar: 'bar' }
+  const theme2 = { foo: 'baz' }
+
   const Foo = () => null
-  Foo.contextTypes = { theme: PropTypes.object }
+  Foo.contextTypes = {
+    [CONTEXT_KEY]: PropTypes.object,
+  }
 
-  it('provides a `theme` context', () => {
-    const theme = { foo: 'foo' }
-    const wrapper = mount(<Theme theme={theme} children={<Foo />} />)
-
-    expect(wrapper.find(Foo).get(0).context).to.eql({ theme })
+  const setupContext = theme => ({
+    [CONTEXT_KEY]: theme,
   })
 
-  it('composes themes', () => {
-    const theme1 = { foo: 'foo' }
-    const theme2 = { foo: 'bar' }
+  const getTheme = wrapper => (
+    wrapper.find(Foo).get(0).context[CONTEXT_KEY]
+  )
 
-    const wrapper = mount(
-      <Theme theme={theme2} compose children={<Foo />} />,
-      { context: { theme: theme1 } },
-    )
-
-    expect(wrapper.find(Foo).get(0).context.theme).to.eql({
-      foo: 'foo bar',
-    })
-  })
-
-  it('merges themes using a provided function', () => {
-    const merge = (parent, child) => ({
-      ...parent,
-      ...child,
-      baz: 'baz',
-    })
-
-    const theme1 = { foo: 'foo' }
-    const theme2 = { bar: 'bar' }
-
-    const wrapper = mount(
-      <Theme theme={theme2} compose={merge} children={<Foo />} />,
-      { context: { theme: theme1 } },
-    )
-
-    expect(wrapper.find(Foo).get(0).context.theme).to.eql({
-      foo: 'foo',
-      bar: 'bar',
-      baz: 'baz',
-    })
-  })
-
-  it('caches composed themes between renders', () => {
-    const theme = { foo: 'bar' }
-    const merge = sinon.spy(() => ({}))
-
-    const wrapper = mount(
-      <Theme theme={theme} compose={merge} children={<Foo />} />,
-      { context: { theme: {} } },
-    )
-
-    wrapper.setProps({ theme })
-    wrapper.setProps({ theme })
-
-    expect(merge.callCount).to.equal(1)
-  })
-
-  it('rebuilds theme when theme prop is changed', () => {
-    const theme = { foo: 'bar' }
-    const merge = sinon.spy(() => ({}))
-
-    const wrapper = mount(
-      <Theme theme={theme} compose={merge} children={<Foo />} />,
-      { context: { theme: {} } },
-    )
-
-    wrapper.setProps({ theme: {} })
-    expect(merge.callCount).to.equal(2)
-  })
-
-  it('rebuilds theme when theme context is changed', () => {
-    const theme1 = { foo: 'foo' }
-    const theme2 = { bar: 'bar' }
-    const merge = sinon.spy(() => ({}))
-
+  it(`provides a '${CONTEXT_KEY}' context`, () => {
     const wrapper = mount(
       <Theme theme={theme1}>
-        <Theme theme={theme2} compose={merge} children={<Foo />} />
+        <Foo />
       </Theme>,
     )
+    expect(getTheme(wrapper)).to.eql(theme1)
+  })
 
-    wrapper.setProps({ theme: {} })
-    expect(merge.callCount).to.equal(2)
+  it('handles a object theme when compose is true', () => {
+    const wrapper = mount(
+      <Theme theme={theme2}>
+        <Foo />
+      </Theme>,
+      { context: setupContext(theme1) },
+    )
+    expect(getTheme(wrapper)).to.eql({
+      foo: 'foo baz',
+      bar: 'bar',
+    })
+  })
+
+  it('handles a object theme when compose is false', () => {
+    const wrapper = mount(
+      <Theme theme={theme2} compose={false}>
+        <Foo />
+      </Theme>,
+      { context: setupContext(theme1) },
+    )
+    expect(getTheme(wrapper)).to.eql(theme2)
+  })
+
+  it('handles a function theme prop', () => {
+    const theme = parent => ({
+      ...parent,
+      ...theme2,
+    })
+    const wrapper = mount(
+      <Theme theme={theme}>
+        <Foo />
+      </Theme>,
+      { context: setupContext(theme1) },
+    )
+    expect(getTheme(wrapper)).to.eql({
+      foo: 'baz',
+      bar: 'bar',
+    })
+  })
+
+  it('caches built themes', () => {
+    const wrapper = mount(
+      <Theme theme={theme1}>
+        <Foo />
+      </Theme>,
+      { context: {} },
+    )
+    const spy = sinon.spy(wrapper.instance(), 'buildTheme')
+    wrapper.setProps({})
+    wrapper.setContext({})
+    expect(spy.callCount).to.equal(0)
+  })
+
+  it('builds theme if theme prop is updated', () => {
+    const wrapper = mount(
+      <Theme theme={theme1}>
+        <Foo />
+      </Theme>,
+      { context: {} },
+    )
+    const spy = sinon.spy(wrapper.instance(), 'buildTheme')
+    wrapper.setProps({ theme: theme2 })
+    expect(spy.callCount).to.equal(1)
+  })
+
+  it('builds theme if context is updated', () => {
+    const wrapper = mount(
+      <Theme theme={theme1}>
+        <Foo />
+      </Theme>,
+      { context: {} },
+    )
+    const instance = wrapper.instance()
+    const spy = sinon.spy(instance, 'buildTheme')
+    instance.componentWillUpdate(instance.props, {}, setupContext(theme2))
+    expect(spy.callCount).to.equal(1)
+  })
+
+  it('rebuilds theme using correct props and context', () => {
+    const wrapper = mount(
+      <Theme theme={theme1} compose={false}>
+        <Foo />
+      </Theme>,
+      { context: {} },
+    )
+    wrapper.setProps({ theme: theme2 })
+    expect(getTheme(wrapper)).to.eql(theme2)
   })
 })

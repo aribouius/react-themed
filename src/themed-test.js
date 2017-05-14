@@ -41,6 +41,12 @@ describe('themed', () => {
       expect(wrapper.find(Foo).prop('theme')).to.eql(theme)
     })
 
+    it('throws for unexpected selectors', () => {
+      const Bar = themed([])(Foo)
+      const fn = () => shallow(<Bar />, { context })
+      expect(fn).to.throw(Error)
+    })
+
     it('handles a configured prop name', () => {
       const Bar = themed(null, { propName: 'styles' })(Foo)
       const wrapper = shallow(<Bar />, { context })

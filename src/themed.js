@@ -30,8 +30,10 @@ const getTheme = (selector, context) => {
       return context[selector]
     case 'object':
       return selector
-    default:
+    case 'undefined':
       return context
+    default:
+      throw new Error(`themed() received unexpected argument of type "${type}".`)
   }
 }
 
@@ -53,7 +55,10 @@ const themed = (selector, options) => component => {
     }
 
     static propTypes = {
-      [config.propName]: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
+      [config.propName]: PropTypes.oneOfType([
+        PropTypes.object,
+        PropTypes.func,
+      ]),
     }
 
     constructor(props, context) {

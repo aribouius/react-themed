@@ -1,6 +1,6 @@
 import React, { Component, PureComponent } from 'react'
 import { expect } from 'chai'
-import { shallow } from 'enzyme'
+import { shallow, mount } from 'enzyme'
 import sinon from 'sinon'
 import themed from './themed'
 import { CONTEXT_KEY } from './const'
@@ -157,6 +157,13 @@ describe('themed', () => {
       const wrapper = shallow(<Bar />, { context })
       wrapper.setProps({ theme })
       expect(wrapper.find(Foo).prop('theme')).to.eql(theme)
+    })
+
+    it('handles a `childRef` prop', () => {
+      const Bar = themed()(Foo)
+      const callback = sinon.spy()
+      const wrapper = mount(<Bar childRef={callback} />)
+      expect(callback.called).to.equal(true)
     })
   })
 

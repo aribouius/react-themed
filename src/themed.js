@@ -58,6 +58,7 @@ const themed = (selector, options) => component => {
     }
 
     static propTypes = {
+      childRef: PropTypes.func,
       [config.propName]: PropTypes.oneOfType([
         PropTypes.object,
         PropTypes.func,
@@ -97,7 +98,10 @@ const themed = (selector, options) => component => {
     }
 
     render() {
-      return createElement(component, config.mergeProps(this.props, {
+      const { childRef, ...props } = this.props
+
+      return createElement(component, config.mergeProps(props, {
+        ref: childRef,
         [config.propName]: this.theme,
       }))
     }

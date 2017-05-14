@@ -7,6 +7,7 @@ import { CONTEXT_KEY } from './const'
 
 describe('themed', () => {
   const Foo = () => null
+  Foo.staticProp = 'foo'
 
   const context = {
     [CONTEXT_KEY]: {
@@ -64,6 +65,11 @@ describe('themed', () => {
         bar: 'bar',
         theme: context[CONTEXT_KEY],
       })
+    })
+
+    it('hoists statics from wrapped component', () => {
+      const Bar = themed()(Foo)
+      expect(Bar.staticProp).to.equal('foo')
     })
   })
 

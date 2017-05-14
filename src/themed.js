@@ -1,5 +1,6 @@
 import { createElement, Component, PureComponent } from 'react'
 import PropTypes from 'prop-types'
+import hoistStatics from 'hoist-non-react-statics'
 import composeTheme from './composeTheme'
 import { CONTEXT_KEY } from './const'
 
@@ -47,7 +48,7 @@ const themed = (selector, options) => component => {
     ? PureComponent
     : Component
 
-  return class Themed extends BaseComponent {
+  class Themed extends BaseComponent {
     static WrappedComponent = component
 
     static displayName = `Themed(${component.displayName || component.name})`
@@ -101,6 +102,8 @@ const themed = (selector, options) => component => {
       }))
     }
   }
+
+  return hoistStatics(Themed, component)
 }
 
 themed.setDefaults = options => {

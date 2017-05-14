@@ -84,6 +84,11 @@ describe('themed', () => {
       expect(Bar.prototype instanceof PureComponent).to.equal(true)
     })
 
+    it('exposes the component it wraps', () => {
+      const Bar = themed()(Foo)
+      expect(Bar.WrappedComponent).to.equal(Foo)
+    })
+
     it('handles a empty theme prop', () => {
       const Bar = themed('Foo')(Foo)
       const wrapper = shallow(<Bar theme={null} />, { context })

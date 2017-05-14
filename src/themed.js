@@ -48,6 +48,8 @@ const themed = (selector, options) => component => {
     : Component
 
   return class Themed extends BaseComponent {
+    static WrappedComponent = component
+
     static displayName = `Themed(${component.displayName || component.name})`
 
     static contextTypes = {

@@ -17,7 +17,7 @@ export default class ThemeProvider extends PureComponent {
   static contextTypes = {
     [CONTEXT_KEY]: PropTypes.object,
   }
-  
+
   static childContextTypes = {
     [CONTEXT_KEY]: PropTypes.object,
   }

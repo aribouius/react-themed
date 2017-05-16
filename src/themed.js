@@ -2,7 +2,7 @@ import { createElement, Component, PureComponent } from 'react'
 import PropTypes from 'prop-types'
 import hoistStatics from 'hoist-non-react-statics'
 import composeTheme from './composeTheme'
-import { CONTEXT_KEY } from './const'
+import { CONTEXT_KEY, CONFIG_KEY } from './const'
 
 const mergeProps = (
   ownProps,
@@ -12,43 +12,62 @@ const mergeProps = (
   ...themeProps,
 })
 
-const defaultOptions = {
+const defaults = {
   mergeProps,
   pure: false,
-  compose: true,
+  compose: composeTheme,
   propName: 'theme',
 }
 
-const getTheme = (selector, context) => {
-  const type = selector
-    ? Array.isArray(selector) ? 'array' : typeof selector
-    : 'undefined'
+const pluck = (theme, keys) => (
+  keys.reduce((acc, key) => {
+    acc[key] = theme[key]
+    return acc
+  }, {})
+)
 
+const getTheme = (theme, context) => {
+  const type = Array.isArray(theme)
+    ? 'array'
+    : typeof theme
   switch (type) {
     case 'function':
-      return selector(context)
+      return theme(context)
     case 'string':
-      return context[selector]
-    case 'object':
-      return selector
-    case 'undefined':
-      return context
+      return context[theme]
+    case 'array':
+      return pluck(context, theme)
     default:
-      throw new Error(`themed() received unexpected argument of type "${type}".`)
+      return theme
   }
 }
 
-const themed = (selector, options) => component => {
-  const config = {
-    ...defaultOptions,
-    ...options,
+const themed = (theme, options = {}) => target => {
+  let themes = []
+  let config = { ...defaults }
+  let component = target
+
+  if (target[CONFIG_KEY]) {
+    config = { ...target[CONFIG_KEY] }
+    themes = [...config.themes]
+    component = target.WrappedComponent
   }
+
+  if (theme) {
+    themes.push(theme)
+  }
+
+  Object.assign(config, options, {
+    themes,
+  })
 
   const BaseComponent = config.pure
     ? PureComponent
     : Component
 
   class Themed extends BaseComponent {
+    static [CONFIG_KEY] = config
+
     static WrappedComponent = component
 
     static displayName = `Themed(${component.displayName || component.name})`
@@ -88,21 +107,22 @@ const themed = (selector, options) => component => {
       const base = context[CONTEXT_KEY] || {}
       const prop = props[config.propName]
 
-      this.theme = getTheme(selector, base)
+      this.theme = config.themes.length ? composeTheme(
+        ...config.themes.map(value => getTheme(value, base)),
+      ) : undefined
 
       if (typeof prop === 'function') {
         this.theme = prop(this.theme, base)
       } else if (prop) {
-        this.theme = config.compose ? composeTheme(this.theme, prop) : prop
+        this.theme = config.compose ? config.compose(this.theme, prop) : prop
       }
     }
 
     render() {
       const { childRef, ...props } = this.props
-
       return createElement(component, config.mergeProps(props, {
-        ref: childRef,
         [config.propName]: this.theme,
+        ref: childRef,
       }))
     }
   }
@@ -111,7 +131,7 @@ const themed = (selector, options) => component => {
 }
 
 themed.setDefaults = options => {
-  Object.assign(defaultOptions, options)
+  Object.assign(defaults, options)
 }
 
 export default themed

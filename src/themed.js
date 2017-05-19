@@ -1,7 +1,7 @@
 import { createElement, Component, PureComponent } from 'react'
 import PropTypes from 'prop-types'
 import hoistStatics from 'hoist-non-react-statics'
-import composeTheme from './composeTheme'
+import compose from './compose'
 import { CONTEXT_KEY, CONFIG_KEY } from './const'
 
 const mergeProps = (
@@ -14,8 +14,8 @@ const mergeProps = (
 
 const defaults = {
   mergeProps,
+  compose,
   pure: false,
-  compose: composeTheme,
   propName: 'theme',
 }
 
@@ -107,7 +107,7 @@ const themed = (theme, options = {}) => target => {
       const base = context[CONTEXT_KEY] || {}
       const prop = props[config.propName]
 
-      this.theme = config.themes.length ? composeTheme(
+      this.theme = config.themes.length ? compose(
         ...config.themes.map(value => getTheme(value, base)),
       ) : undefined
 

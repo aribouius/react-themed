@@ -1,6 +1,6 @@
 import { PureComponent, Children } from 'react'
 import PropTypes from 'prop-types'
-import composeTheme from './composeTheme'
+import compose from './compose'
 import { CONTEXT_KEY } from './const'
 
 export default class ThemeProvider extends PureComponent {
@@ -34,13 +34,13 @@ export default class ThemeProvider extends PureComponent {
   }
 
   buildTheme(props, context) {
-    const { theme, compose } = props
+    const { theme } = props
     const { [CONTEXT_KEY]: parentTheme } = context
 
     if (typeof theme === 'function') {
       this.theme = theme(parentTheme)
-    } else if (parentTheme && compose) {
-      this.theme = composeTheme(parentTheme, theme)
+    } else if (parentTheme && props.compose) {
+      this.theme = compose(parentTheme, theme)
     } else {
       this.theme = theme
     }

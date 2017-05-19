@@ -1,11 +1,11 @@
 import { expect } from 'chai'
-import composeTheme from './composeTheme'
+import compose from './compose'
 
-describe('composeTheme', () => {
+describe('compose', () => {
   it('composes themes', () => {
     const theme1 = { foo: 'foo', bar: 'bar' }
     const theme2 = { foo: 'bar', baz: 'baz' }
-    const result = composeTheme(theme1, theme2)
+    const result = compose({}, theme1, theme2)
     expect(result).to.eql({
       foo: 'foo bar',
       bar: 'bar',
@@ -13,10 +13,18 @@ describe('composeTheme', () => {
     })
   })
 
+  it('composes themes into a target object', () => {
+    const target = {}
+    const theme1 = { foo: 'foo', bar: 'bar' }
+    const theme2 = { foo: 'bar', baz: 'baz' }
+    const result = compose(target, theme1, theme2)
+    expect(result).to.equal(target)
+  })
+
   it('composes themes recursively', () => {
     const theme1 = { foo: { bar: { baz: 'baz' } } }
     const theme2 = { foo: { bar: { baz: 'bat' } } }
-    const result = composeTheme(theme1, theme2)
+    const result = compose({}, theme1, theme2)
     expect(result).to.eql({
       foo: {
         bar: {
@@ -29,14 +37,14 @@ describe('composeTheme', () => {
   it('composes theme functions', () => {
     const theme1 = { foo: () => '.foo{}' }
     const theme2 = { foo: () => '.bar{}' }
-    const result = composeTheme(theme1, theme2)
+    const result = compose({}, theme1, theme2)
     expect(result.foo()).to.eql('.foo{}.bar{}')
   })
 
   it('only composes similar value types', () => {
     const theme1 = { foo: 'foo', bar: 'bar' }
     const theme2 = { foo: {}, bar: () => {} }
-    const result = composeTheme(theme1, theme2)
+    const result = compose({}, theme1, theme2)
     expect(result).to.eql({
       foo: 'foo',
       bar: 'bar',
@@ -46,7 +54,7 @@ describe('composeTheme', () => {
   it('strips out null values', () => {
     const theme1 = { foo: null }
     const theme2 = { bar: 'bar' }
-    const result = composeTheme(theme1, theme2)
+    const result = compose({}, theme1, theme2)
     expect(result).to.eql({
       bar: 'bar',
     })

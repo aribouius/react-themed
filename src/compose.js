@@ -7,8 +7,10 @@ const combineFunctions = (fn1, fn2) => () => {
     : undefined
 }
 
-const mergeThemes = (target, mixin = {}) => (
-  Object.keys(mixin).reduce((acc, key) => {
+const composeThemes = (target, mixin) => {
+  if (!mixin) return target
+
+  return Object.keys(mixin).reduce((acc, key) => {
     switch (typeof acc[key]) {
       case 'undefined':
         if (mixin[key] !== null) {
@@ -22,7 +24,7 @@ const mergeThemes = (target, mixin = {}) => (
         break
       case 'object':
         if (typeof mixin[key] === 'object') {
-          mergeThemes(acc[key], mixin[key])
+          composeThemes(acc[key], mixin[key])
         }
         break
       case 'function':
@@ -35,8 +37,8 @@ const mergeThemes = (target, mixin = {}) => (
     }
     return acc
   }, target)
-)
+}
 
-export default function composeTheme(...themes) {
-  return themes.reduce((target, theme = {}) => mergeThemes(target, theme), {})
+export default function compose(target = {}, ...themes) {
+  return themes.reduce((acc, theme) => composeThemes(acc, theme), target)
 }

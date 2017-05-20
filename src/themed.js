@@ -1,8 +1,8 @@
 import { createElement, Component, PureComponent } from 'react'
 import PropTypes from 'prop-types'
-import hoistStatics from 'hoist-non-react-statics'
-import compose from './compose'
+import hoist from 'hoist-non-react-statics'
 import { CONTEXT_KEY, CONFIG_KEY } from './const'
+import compose from './compose'
 
 const mergeProps = (
   ownProps,
@@ -12,13 +12,6 @@ const mergeProps = (
   ...themeProps,
 })
 
-const defaults = {
-  mergeProps,
-  compose,
-  pure: false,
-  propName: 'theme',
-}
-
 const pluck = (theme, keys) => (
   keys.reduce((acc, key) => {
     acc[key] = theme[key]
@@ -26,41 +19,7 @@ const pluck = (theme, keys) => (
   }, {})
 )
 
-const getTheme = (theme, context) => {
-  const type = Array.isArray(theme)
-    ? 'array'
-    : typeof theme
-  switch (type) {
-    case 'function':
-      return theme(context)
-    case 'string':
-      return context[theme]
-    case 'array':
-      return pluck(context, theme)
-    default:
-      return theme
-  }
-}
-
-const themed = (theme, options = {}) => target => {
-  let themes = []
-  let config = { ...defaults }
-  let component = target
-
-  if (target[CONFIG_KEY]) {
-    config = { ...target[CONFIG_KEY] }
-    themes = [...config.themes]
-    component = target.WrappedComponent
-  }
-
-  if (theme) {
-    themes.push(theme)
-  }
-
-  Object.assign(config, options, {
-    themes,
-  })
-
+const create = (component, config) => {
   const BaseComponent = config.pure
     ? PureComponent
     : Component
@@ -68,9 +27,8 @@ const themed = (theme, options = {}) => target => {
   class Themed extends BaseComponent {
     static [CONFIG_KEY] = config
 
-    static WrappedComponent = component
-
     static displayName = `Themed(${component.displayName || component.name})`
+    static WrappedComponent = component
 
     static contextTypes = {
       [CONTEXT_KEY]: PropTypes.object,
@@ -80,6 +38,8 @@ const themed = (theme, options = {}) => target => {
       childRef: PropTypes.func,
       [config.propName]: PropTypes.oneOfType([
         PropTypes.object,
+        PropTypes.string,
+        PropTypes.array,
         PropTypes.func,
       ]),
     }
@@ -103,23 +63,39 @@ const themed = (theme, options = {}) => target => {
       return this.context[CONTEXT_KEY] !== context[CONTEXT_KEY]
     }
 
+    compose(target, theme) {
+      return theme ? config.compose(target || {}, theme) : theme
+    }
+
     buildTheme(props, context) {
-      const base = context[CONTEXT_KEY] || {}
-      const prop = props[config.propName]
+      this.theme = undefined
 
-      this.theme = config.themes.length ? compose(
-        ...config.themes.map(value => getTheme(value, base)),
-      ) : undefined
+      const themes = config.themes.slice()
+      const shared = context[CONTEXT_KEY] || {}
 
-      if (typeof prop === 'function') {
-        this.theme = prop(this.theme, base)
-      } else if (prop) {
-        this.theme = config.compose ? config.compose(this.theme, prop) : prop
+      if (props[config.propName]) {
+        themes.push(props[config.propName])
       }
+
+      themes.forEach(theme => {
+        if (Array.isArray(theme)) {
+          this.theme = this.compose(this.theme, pluck(shared, theme))
+        } else if (typeof theme === 'string') {
+          this.theme = this.compose(this.theme, shared[theme])
+        } else if (typeof theme === 'object') {
+          this.theme = this.compose(this.theme, theme)
+        } else if (typeof theme === 'function') {
+          this.theme = theme(this.theme, shared)
+        }
+      })
     }
 
     render() {
-      const { childRef, ...props } = this.props
+      const {
+        childRef,
+        ...props
+      } = this.props
+
       return createElement(component, config.mergeProps(props, {
         [config.propName]: this.theme,
         ref: childRef,
@@ -127,11 +103,52 @@ const themed = (theme, options = {}) => target => {
     }
   }
 
-  return hoistStatics(Themed, component)
+  return hoist(
+    Themed,
+    component,
+  )
 }
 
-themed.setDefaults = options => {
-  Object.assign(defaults, options)
+const factory = defaults => {
+  const themed = (theme, options = {}) => target => {
+    let themes = []
+    let config = { ...defaults }
+    let component = target
+
+    if (target[CONFIG_KEY]) {
+      config = { ...target[CONFIG_KEY] }
+      themes = [...config.themes]
+      component = target.WrappedComponent
+    }
+
+    if (theme) {
+      themes.push(theme)
+    }
+
+    Object.assign(config, options, {
+      themes,
+    })
+
+    return create(
+      component,
+      config,
+    )
+  }
+
+  return Object.assign(themed, {
+    defaults,
+    extend: config => (
+      factory({
+        ...defaults,
+        ...config,
+      })
+    ),
+  })
 }
 
-export default themed
+export default factory({
+  compose,
+  mergeProps,
+  pure: false,
+  propName: 'theme',
+})

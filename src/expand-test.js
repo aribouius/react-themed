@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import expandTheme from './expandTheme'
+import expand from './expand'
 
 describe('expandTheme', () => {
   const createTheme = sep => ({
@@ -12,7 +12,7 @@ describe('expandTheme', () => {
 
   it('expands a flattened theme', () => {
     const theme = createTheme('-')
-    const result = expandTheme(theme)
+    const result = expand(theme)
 
     expect(result).to.eql({
       Foo: {
@@ -31,7 +31,7 @@ describe('expandTheme', () => {
 
   it('accepts a custom separator', () => {
     const theme = createTheme('_')
-    const result = expandTheme(theme, {
+    const result = expand(theme, {
       separator: '_',
     })
 

@@ -1,4 +1,4 @@
-export default function expandTheme(source, { separator = '-' } = {}) {
+export default function expand(source, { separator = '-' } = {}) {
   const theme = {}
 
   Object.keys(source).forEach(path => {

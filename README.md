@@ -88,6 +88,7 @@ export default ({ classes, ...props }) => (
 
 ## Theme Composition
 Themes can be composed in several ways, either at the time of component creation, or while rendering.
+
 #### Compose themes
 ```javascript
 import { compose } from 'react-themed'
@@ -232,12 +233,12 @@ Creates a new HOC for generating a `Themed` component.
   - `mergeProps(ownProps, themeProps): props` \(*Function*): If specified, it is passed the parent props and theme props, and is expected to return a merged object to pass as props to the wrapped component.
 
 #### `themed.extend(options)`
-Creates a new `themed` function that uses a different set of default options when generating themed components.
+Creates a new `themed` function that uses a customized set of default options when generating themed components.
 - `options` \(*Object*): The options to merge into the previous default options.
 
 #### `<Themed [theme] [childRef]>`
 The *themed* component created by the `themed` decorator.
-- `theme` \(*Object|String|Array|Function*): A theme or context theme (selector) that should be composed with the previous theme, or a function that customizes the previous theme theme.  
+- `theme` \(*Object|String|Array|Function*): A theme or context theme (selector) that should be composed with the previous theme, or a function that customizes the previous theme.  
 - `childRef` \(Function*): Specifies a [ref](https://facebook.github.io/react/docs/refs-and-the-dom.html) callback function to pass to the wrapped component.
 
 #### `compose(target, ...themes)`

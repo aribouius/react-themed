@@ -2,7 +2,9 @@
   "name": "react-themed",
   "description": "A simple theme provider and composition utility for react applications.",
   "version": "3.0.0",
-  "main": "index.js",
+  "main": "./lib/index.js",
+  "module": "es/index.js",
+  "jsnext:main": "es/index.js",
   "license": "MIT",
   "homepage": "https://github.com/aribouius/react-themed",
   "repository": {
@@ -13,19 +15,26 @@
     "url": "https://github.com/aribouius/react-themed/issues"
   },
   "scripts": {
-    "clean": "rm -rf lib",
-    "build": "babel -d lib src",
-    "build:watch": "yarn run build -- --watch",
-    "test": "mocha --compilers js:babel-core/register --recursive",
+    "clean": "rm -rf lib && rm -rf es && rm -rf dist",
+    "build": "yarn run build:es && yarn run build:commonjs && yarn run build:umd && yarn run build:umd:min",
+    "build:es": "BABEL_ENV=es babel -d es src",
+    "build:commonjs": "BABEL_ENV=commonjs babel -d lib src",
+    "build:umd": "BABEL_ENV=rollup NODE_ENV=development rollup -c -o dist/react-themed.js",
+    "build:umd:min": "BABEL_ENV=rollup NODE_ENV=production rollup -c -o dist/react-themed.min.js",
+    "build:watch": "yarn run build:es -- --watch",
+    "test": "BABEL_ENV=commonjs mocha --compilers js:babel-core/register --recursive",
     "test:watch": "yarn run test -- --watch",
     "lint": "eslint src",
-    "lint:fix": "yarn run lint -- --fix"
+    "lint:fix": "yarn run lint -- --fix",
+    "prepublish": "npm run clean && npm run build"
   },
   "devDependencies": {
     "babel-cli": "^6.24.0",
-    "babel-core": "^6.24.0",
+    "babel-core": "^6.24.1",
     "babel-eslint": "^7.2.3",
+    "babel-plugin-external-helpers": "^6.22.0",
     "babel-plugin-transform-class-properties": "^6.23.0",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.24.1",
     "babel-plugin-transform-object-rest-spread": "^6.23.0",
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-es2015": "^6.24.0",
@@ -43,10 +52,14 @@
     "react-addons-test-utils": "^15.4.2",
     "react-dom": "^15.4.2",
     "react-test-renderer": "^15.5.4",
+    "rollup": "^0.41.6",
+    "rollup-plugin-babel": "^2.7.1",
+    "rollup-plugin-commonjs": "^8.0.2",
+    "rollup-plugin-node-resolve": "^3.0.0",
+    "rollup-plugin-uglify": "^2.0.1",
     "sinon": "^2.1.0"
   },
   "dependencies": {
-    "babel-runtime": "^6.23.0",
     "hoist-non-react-statics": "^1.2.0",
     "prop-types": "^15.5.8"
   },

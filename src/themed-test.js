@@ -17,6 +17,7 @@ describe('themed', () => {
   const context = {
     Foo: { foo: 'foo' },
     Bar: { bar: 'bar' },
+    Baz: { bar: 'baz' },
   }
 
   const setup = ({
@@ -71,9 +72,22 @@ describe('themed', () => {
       expect(getTheme()).to.eql(context.Foo)
     })
 
+    it('handles a wildcard theme', () => {
+      const { getTheme } = setup({ theme: '*' })
+      expect(getTheme()).to.eql(context)
+    })
+
     it('handles an array theme', () => {
       const { getTheme } = setup({ theme: ['Foo'] })
       expect(getTheme()).to.eql({ Foo: context.Foo })
+    })
+
+    it('handles a regex theme', () => {
+      const { getTheme } = setup({ theme: /^Ba/ })
+      expect(getTheme()).to.eql({
+        Bar: context.Bar,
+        Baz: context.Baz,
+      })
     })
 
     it('handles a function theme', () => {
@@ -157,9 +171,25 @@ describe('themed', () => {
         expect(getTheme()).to.eql({ ...context.Foo, ...context.Bar })
       })
 
+      it('handles a wildcard theme', () => {
+        const { getTheme } = setup({ theme: '*', component: Bar })
+        expect(getTheme()).to.eql({
+          ...context,
+          ...context.Bar,
+        })
+      })
+
       it('handles an array theme', () => {
         const { getTheme } = setup({ theme: ['Foo'], component: Bar })
         expect(getTheme()).to.eql({ ...context.Bar, Foo: context.Foo })
+      })
+
+      it('handles a regex theme', () => {
+        const { getTheme } = setup({ theme: /^Baz/, component: Bar })
+        expect(getTheme()).to.eql({
+          ...context.Bar,
+          Baz: context.Baz,
+        })
       })
 
       it('handles a function theme', () => {

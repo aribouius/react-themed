@@ -19,6 +19,13 @@ const pluck = (theme, keys) => (
   }, {})
 )
 
+const match = (theme, regex) => (
+  Object.keys(theme).reduce((acc, key) => {
+    if (key.match(regex)) acc[key] = theme[key]
+    return acc
+  }, {})
+)
+
 const create = (component, config) => {
   const BaseComponent = config.pure
     ? PureComponent
@@ -81,7 +88,9 @@ const create = (component, config) => {
         if (Array.isArray(theme)) {
           this.theme = this.compose(this.theme, pluck(shared, theme))
         } else if (typeof theme === 'string') {
-          this.theme = this.compose(this.theme, shared[theme])
+          this.theme = this.compose(this.theme, theme === '*' ? shared : shared[theme])
+        } else if (theme instanceof RegExp) {
+          this.theme = this.compose(this.theme, match(shared, theme))
         } else if (typeof theme === 'object') {
           this.theme = this.compose(this.theme, theme)
         } else if (typeof theme === 'function') {

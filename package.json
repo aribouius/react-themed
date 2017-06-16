@@ -24,8 +24,8 @@
   "scripts": {
     "clean": "rm -rf lib && rm -rf es && rm -rf dist",
     "build": "yarn run build:es && yarn run build:commonjs && yarn run build:umd && yarn run build:umd:min",
-    "build:es": "BABEL_ENV=es babel -d es src",
-    "build:commonjs": "BABEL_ENV=commonjs babel -d lib src",
+    "build:es": "BABEL_ENV=es babel --ignore *-test.js -d es src",
+    "build:commonjs": "BABEL_ENV=commonjs babel --ignore *-test.js -d lib src",
     "build:umd": "BABEL_ENV=rollup NODE_ENV=development rollup -c -o dist/react-themed.js",
     "build:umd:min": "BABEL_ENV=rollup NODE_ENV=production rollup -c -o dist/react-themed.min.js",
     "build:watch": "yarn run build:es -- --watch",

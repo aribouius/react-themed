@@ -1,5 +1,5 @@
 # react-themed
-A flexible library for styling React components. Intended for projects using global CSS, [JSS](https://github.com/cssinjs/jss), [CSS Modules](https://github.com/css-modules/css-modules), or any other [CSS in JS](https://github.com/MicheleBertoli/css-in-js) based library that compiles CSS classname reference objects.
+A flexible library for styling React components. Intended for projects using global CSS, [JSS](https://github.com/cssinjs/jss), [CSS Modules](https://github.com/css-modules/css-modules), or any other [CSS in JS](https://github.com/MicheleBertoli/css-in-js) based library that compiles CSS classname objects.
 
 [![Travis](https://img.shields.io/travis/rust-lang/rust.svg?style=flat-square)](https://github.com/aribouius/react-themed)
 [![npm](https://img.shields.io/npm/v/react-themed.svg?style=flat-square)](https://www.npmjs.com/package/react-themed)
@@ -32,7 +32,7 @@ $ npm i --save react-themed
 
 ## Terminology
 ##### _`theme`_
-A plain object containing CSS classname references used by one or more React components.
+A plain object containing CSS classnames used by one or more React components.
 
 ##### _`theme composition`_
 The merging of two or more theme objects, where values for overlapping keys are concatenated.
@@ -73,7 +73,7 @@ const Button = ({ theme, ...props }) => (
 export default themed(styles)(Button)
 ```
 
-#### Configure wrapped component
+#### Configure wrapping component
 ```javascript
 import themed from 'react-themed'
 import styles from './Button.css'
@@ -91,9 +91,9 @@ export default ({ classes, ...props }) => (
 ***
 
 ## Theme Composition
-Themes can be composed in several ways, either at the time of component creation, or while rendering.
+Themes can be composed in the following ways:
 
-#### Compose themes
+#### Compose theme objects
 ```javascript
 import { compose } from 'react-themed'
 import defaultStyles from './Button.css'
@@ -133,7 +133,7 @@ export default props => (
 )
 ```
 
-#### Customize composition (e.g. for regular merging)
+#### Customize theme (e.g. for regular merging)
 ```javascript
 import themed from 'react-themed'
 import Button from './Button'
@@ -148,7 +148,7 @@ export default themed(prevStyles => ({
 ***
 
 ## Context Themes
-This library currently supports two context theme shapes.
+While this library does not require a specific shape for context theme objects, the following tend to work well:
 
 ```javascript
 // Flat
@@ -177,31 +177,25 @@ const App = props => (
 )
 ```
 
-#### Use a flat context theme
+#### Apply a context theme
 ```javascript
 import themed from 'react-themed'
 
-// pluck classnames
-@themed([
-  'Button',
-  'Button_primary',
-])
-
-export default ({ theme, ...props }) => (
+const Button = ({ theme, ...props }) => (
   <button {...props} className={theme.Button} />
 )
-```
 
-#### Use a nested context theme
-```javascript
-import themed from 'react-themed'
+// select entire context theme
+themed('*')(Button)
 
-// select theme namespace
-@themed('Button')
+// select single classname (or nested theme)
+themed('Button')(Button)
 
-export default ({ theme, ...props }) => (
-  <button {...props} className={theme.button} />
-)
+// select multiple classnames
+themed(['Button', 'Button_primary'])(Button)
+
+// select all classnames starting with "Button"
+themed(/^Button/)(Button)
 ```
 
 #### Customize context themes

@@ -1,7 +1,7 @@
 {
   "name": "react-themed",
   "description": "A flexible library for styling React components",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "main": "./lib/index.js",
   "module": "es/index.js",
   "jsnext:main": "es/index.js",

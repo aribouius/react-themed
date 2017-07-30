@@ -40,7 +40,7 @@ export default class ThemeProvider extends PureComponent {
     if (typeof theme === 'function') {
       this.theme = theme(parentTheme)
     } else if (parentTheme && props.compose) {
-      this.theme = compose(parentTheme, theme)
+      this.theme = compose({}, parentTheme, theme)
     } else {
       this.theme = theme
     }

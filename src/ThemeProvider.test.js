@@ -10,7 +10,7 @@ describe('ThemeProvider', () => {
   const theme1 = { foo: 'foo', bar: 'bar' }
   const theme2 = { foo: 'baz' }
 
-  const Foo = () => null
+  const Foo = () => <div>Hello</div>
   Foo.contextTypes = {
     [CONTEXT_KEY]: PropTypes.object,
   }
@@ -19,17 +19,14 @@ describe('ThemeProvider', () => {
     [CONTEXT_KEY]: theme,
   })
 
-  const getTheme = wrapper => (
-    wrapper.find(Foo).get(0).context[CONTEXT_KEY]
-  )
-
   it(`provides a '${CONTEXT_KEY}' context`, () => {
     const wrapper = mount(
       <Theme theme={theme1}>
         <Foo />
       </Theme>,
     )
-    expect(getTheme(wrapper)).to.eql(theme1)
+
+    expect(wrapper.context()).to.have.key(CONTEXT_KEY)
   })
 
   it('handles a object theme when compose is true', () => {
@@ -39,7 +36,8 @@ describe('ThemeProvider', () => {
       </Theme>,
       { context: setupContext(theme1) },
     )
-    expect(getTheme(wrapper)).to.eql({
+
+    expect(wrapper.instance().theme).to.eql({
       foo: 'foo baz',
       bar: 'bar',
     })
@@ -52,7 +50,7 @@ describe('ThemeProvider', () => {
       </Theme>,
       { context: setupContext(theme1) },
     )
-    expect(getTheme(wrapper)).to.eql(theme2)
+    expect(wrapper.instance().theme).to.eql(theme2)
   })
 
   it('handles a function theme prop', () => {
@@ -66,7 +64,7 @@ describe('ThemeProvider', () => {
       </Theme>,
       { context: setupContext(theme1) },
     )
-    expect(getTheme(wrapper)).to.eql({
+    expect(wrapper.instance().theme).to.eql({
       foo: 'baz',
       bar: 'bar',
     })
@@ -118,6 +116,7 @@ describe('ThemeProvider', () => {
       { context: {} },
     )
     wrapper.setProps({ theme: theme2 })
-    expect(getTheme(wrapper)).to.eql(theme2)
+
+    expect(wrapper.instance().theme).to.eql(theme2)
   })
 })

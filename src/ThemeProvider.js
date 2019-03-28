@@ -1,9 +1,9 @@
 import { PureComponent, Children } from 'react'
 import PropTypes from 'prop-types'
 import compose from './compose'
-import { CONTEXT_KEY } from './const'
+import { ThemeProvider } from './context'
 
-export default class ThemeProvider extends PureComponent {
+export default class ThemeProviderWrapper extends PureComponent {
   static propTypes = {
     theme: PropTypes.oneOfType([PropTypes.object, PropTypes.func]).isRequired,
     compose: PropTypes.bool,
@@ -14,43 +14,33 @@ export default class ThemeProvider extends PureComponent {
     compose: true,
   }
 
-  static contextTypes = {
-    [CONTEXT_KEY]: PropTypes.object,
+  constructor(props) {
+    super(props)
+    this.buildTheme(props)
   }
 
-  static childContextTypes = {
-    [CONTEXT_KEY]: PropTypes.object,
-  }
-
-  constructor(props, context) {
-    super(props, context)
-    this.buildTheme(props, context)
-  }
-
-  componentWillUpdate(props, state, context) {
-    if (this.context[CONTEXT_KEY] !== context[CONTEXT_KEY] || this.props.theme !== props.theme) {
-      this.buildTheme(props, context)
+  shouldComponentUpdate(nextProps) {
+    if (this.props.theme !== nextProps.theme) {
+      this.buildTheme(this.props, nextProps)
     }
   }
 
-  buildTheme(props, context) {
+  buildTheme(props, newProps) {
     const { theme } = props
-    const { [CONTEXT_KEY]: parentTheme } = context
+    const { theme: newTheme } = newProps
 
-    if (typeof theme === 'function') {
-      this.theme = theme(parentTheme)
-    } else if (parentTheme && props.compose) {
-      this.theme = compose({}, parentTheme, theme)
+    if (props && newProps) {
+      this.theme = compose({}, theme, newTheme)
     } else {
       this.theme = theme
     }
   }
 
-  getChildContext() {
-    return { [CONTEXT_KEY]: this.theme }
-  }
-
   render() {
-    return Children.only(this.props.children)
+    return (
+      <ThemeProvider value={this.props.theme}>
+        { Children.only(this.props.children) }
+      </ThemeProvider>
+    )
   }
 }

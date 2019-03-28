@@ -5,16 +5,25 @@ import { shallow } from 'enzyme'
 import themeContext from './themeContext'
 import { CONTEXT_KEY } from './const'
 
+
+class Foo extends React.Component {
+  render() {
+    return (
+      <div>Hello</div>
+    )
+  }
+}
+
 describe('themeContext', () => {
   it('assigns a `theme` context type', () => {
-    const Foo = themeContext(() => null)
+    const Component = themeContext(Foo)
     const context = { [CONTEXT_KEY]: { foo: 'foo' } }
-    const wrapper = shallow(<Foo />, { context })
+    const wrapper = shallow(<Component/>, { context })
+
     expect(wrapper.context()).to.eql(context)
   })
 
   it('merges existing context types', () => {
-    const Foo = () => null
     Foo.contextTypes = { bar: PropTypes.string }
     const Bar = themeContext(Foo)
     const context = { [CONTEXT_KEY]: { foo: 'foo' }, bar: 'bar' }

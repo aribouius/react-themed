@@ -15,7 +15,7 @@ class Foo extends React.Component {
 }
 
 describe('themeContext', () => {
-  it('assigns a `theme` context type', () => {
+  test('assigns a `theme` context type', () => {
     const Component = themeContext(Foo)
     const context = { [CONTEXT_KEY]: { foo: 'foo' } }
     const wrapper = shallow(<Component/>, { context })
@@ -23,7 +23,7 @@ describe('themeContext', () => {
     expect(wrapper.context()).to.eql(context)
   })
 
-  it('merges existing context types', () => {
+  test('merges existing context types', () => {
     Foo.contextTypes = { bar: PropTypes.string }
     const Bar = themeContext(Foo)
     const context = { [CONTEXT_KEY]: { foo: 'foo' }, bar: 'bar' }

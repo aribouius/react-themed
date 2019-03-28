@@ -10,7 +10,7 @@ describe('expandTheme', () => {
     [`Foo${sep}Bar${sep}bar`]: 'bar',
   })
 
-  it('expands a flattened theme', () => {
+  test('expands a flattened theme', () => {
     const theme = createTheme('-')
     const result = expand(theme)
 
@@ -29,7 +29,7 @@ describe('expandTheme', () => {
     })
   })
 
-  it('accepts a custom separator', () => {
+  test('accepts a custom separator', () => {
     const theme = createTheme('_')
     const result = expand(theme, {
       separator: '_',

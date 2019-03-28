@@ -40,5 +40,10 @@ const composeThemes = (target, mixin) => {
 }
 
 export default function compose(target = {}, ...themes) {
+  // Minor optimization to skip reduce on already composed theme
+  if (themes.length === 1) {
+    return composeThemes(target, themes[0])
+  }
+
   return themes.reduce((acc, theme) => composeThemes(acc, theme), target)
 }

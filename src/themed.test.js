@@ -1,8 +1,12 @@
-import { createElement, Component, PureComponent } from 'react'
+/**
+ * @jest-environment jsdom
+ */
+import React, { createElement, Component } from 'react'
 import { expect } from 'chai'
-import { shallow, mount } from 'enzyme'
+import { mount } from 'enzyme'
 import sinon from 'sinon'
 import themed from './themed'
+import ThemeProvider from './ThemeProvider'
 import { CONFIG_KEY } from './const'
 
 describe('themed', () => {
@@ -28,13 +32,16 @@ describe('themed', () => {
     decorator = themed,
   } = {}) => {
     const Themed = decorator(theme, config)(component)
-    const wrapper = shallow(createElement(Themed, props), {
-      context: { theme: context },
-    })
+    const wrapper = mount(
+      <ThemeProvider theme={ context }>
+        <Themed {...props} />
+      </ThemeProvider>,
+    )
 
     return {
       Themed,
       wrapper,
+      themewrapper: () => (wrapper.find('Themed(Foo)')),
       getTheme: () => (
         wrapper.find(Foo).prop('theme')
       ),
@@ -42,47 +49,50 @@ describe('themed', () => {
   }
 
   describe('decorator', () => {
-    it('handles a undefined theme', () => {
+    test('handles a undefined theme', () => {
       const { getTheme } = setup()
+ 
       expect(getTheme()).to.equal(undefined)
     })
 
-    it('handles a null theme', () => {
+    test('handles a null theme', () => {
       const { getTheme } = setup({ theme: null })
       expect(getTheme()).to.equal(undefined)
     })
 
-    it('handles a false theme', () => {
+    test('handles a false theme', () => {
       const { getTheme } = setup({ theme: false })
       expect(getTheme()).to.equal(undefined)
     })
 
-    it('handles a number theme', () => {
+    test('handles a number theme', () => {
       const { getTheme } = setup({ theme: 1 })
       expect(getTheme()).to.equal(undefined)
     })
 
-    it('handles a object theme', () => {
+    test('handles a object theme', () => {
       const { getTheme } = setup({ theme: context.Foo })
+
       expect(getTheme()).to.eql(context.Foo)
     })
 
-    it('handles a string theme', () => {
+    test('handles a string theme', () => {
       const { getTheme } = setup({ theme: 'Foo' })
+
       expect(getTheme()).to.eql(context.Foo)
     })
 
-    it('handles a wildcard theme', () => {
+    test('handles a wildcard theme', () => {
       const { getTheme } = setup({ theme: '*' })
       expect(getTheme()).to.eql(context)
     })
 
-    it('handles an array theme', () => {
+    test('handles an array theme', () => {
       const { getTheme } = setup({ theme: ['Foo'] })
       expect(getTheme()).to.eql({ Foo: context.Foo })
     })
 
-    it('handles a regex theme', () => {
+    test('handles a regex theme', () => {
       const { getTheme } = setup({ theme: /^Ba/ })
       expect(getTheme()).to.eql({
         Bar: context.Bar,
@@ -90,24 +100,14 @@ describe('themed', () => {
       })
     })
 
-    it('handles a function theme', () => {
+    test('handles a function theme', () => {
       const spy = sinon.spy(() => context.Foo)
       const { getTheme } = setup({ theme: spy })
       expect(getTheme()).to.equal(context.Foo)
       expect(spy.calledWith(undefined, context)).to.equal(true)
     })
 
-    it('handles a "pure" option', () => {
-      const { Themed } = setup({ config: { pure: true } })
-      expect(Themed.prototype instanceof PureComponent).to.equal(true)
-    })
-
-    it('applies a default "pure" option', () => {
-      const { Themed } = setup()
-      expect(Themed.prototype instanceof Component).to.equal(true)
-    })
-
-    it('handles a "compose" option', () => {
+    test('handles a "compose" option', () => {
       const { getTheme } = setup({
         theme: context.Foo,
         props: { theme: context.Bar },
@@ -119,7 +119,7 @@ describe('themed', () => {
       })
     })
 
-    it('handles a "mergeProps" option', () => {
+    test('handles a "mergeProps" option', () => {
       const props = { foo: 'foo' }
       const merged = { ...props, bar: 'bar' }
       const mergeProps = sinon.spy(() => merged)
@@ -128,12 +128,12 @@ describe('themed', () => {
       expect(mergeProps.calledWith(props, { theme: undefined, ref: undefined })).to.equal(true)
     })
 
-    it('handles existing static properties', () => {
+    test('handles existing static properties', () => {
       const { Themed } = setup()
       expect(Themed.foo).to.equal('foo')
     })
 
-    it('exposes the wrapped component', () => {
+    test('exposes the wrapped component', () => {
       const { Themed } = setup()
       expect(Themed.WrappedComponent).to.equal(Foo)
     })
@@ -141,37 +141,37 @@ describe('themed', () => {
     describe('when handling a Themed component', () => {
       const Bar = themed(context.Bar, { pure: true })(Foo)
 
-      it('handles a undefined theme', () => {
+      test('handles a undefined theme', () => {
         const { getTheme } = setup({ component: Bar })
         expect(getTheme()).to.eql(context.Bar)
       })
 
-      it('handles a null theme', () => {
+      test('handles a null theme', () => {
         const { getTheme } = setup({ theme: null, component: Bar })
         expect(getTheme()).to.eql(context.Bar)
       })
 
-      it('handles a false theme', () => {
+      test('handles a false theme', () => {
         const { getTheme } = setup({ theme: false, component: Bar })
         expect(getTheme()).to.eql(context.Bar)
       })
 
-      it('handles a number theme', () => {
+      test('handles a number theme', () => {
         const { getTheme } = setup({ theme: 1, component: Bar })
         expect(getTheme()).to.eql(context.Bar)
       })
 
-      it('handles a object theme', () => {
+      test('handles a object theme', () => {
         const { getTheme } = setup({ theme: context.Foo, component: Bar })
         expect(getTheme()).to.eql({ ...context.Foo, ...context.Bar })
       })
 
-      it('handles a string theme', () => {
+      test('handles a string theme', () => {
         const { getTheme } = setup({ theme: 'Foo', component: Bar })
         expect(getTheme()).to.eql({ ...context.Foo, ...context.Bar })
       })
 
-      it('handles a wildcard theme', () => {
+      test('handles a wildcard theme', () => {
         const { getTheme } = setup({ theme: '*', component: Bar })
         expect(getTheme()).to.eql({
           ...context,
@@ -179,12 +179,12 @@ describe('themed', () => {
         })
       })
 
-      it('handles an array theme', () => {
+      test('handles an array theme', () => {
         const { getTheme } = setup({ theme: ['Foo'], component: Bar })
         expect(getTheme()).to.eql({ ...context.Bar, Foo: context.Foo })
       })
 
-      it('handles a regex theme', () => {
+      test('handles a regex theme', () => {
         const { getTheme } = setup({ theme: /^Baz/, component: Bar })
         expect(getTheme()).to.eql({
           ...context.Bar,
@@ -192,20 +192,20 @@ describe('themed', () => {
         })
       })
 
-      it('handles a function theme', () => {
+      test('handles a function theme', () => {
         const spy = sinon.spy(() => context.Foo)
         const { getTheme } = setup({ theme: spy, component: Bar })
         expect(getTheme()).to.equal(context.Foo)
         expect(spy.calledWith(context.Bar, context)).to.equal(true)
       })
 
-      it('merges the previous config', () => {
+      test('merges the previous config', () => {
         const { Themed } = setup({ component: Bar, config: { propName: 'styles' } })
         expect(Themed[CONFIG_KEY].pure).to.equal(true)
         expect(Themed[CONFIG_KEY].propName).to.equal('styles')
       })
 
-      it('does not mutate the previous config', () => {
+      test('does not mutate the previous config', () => {
         setup({ component: Bar, config: { propName: 'styles' } })
         expect(Bar[CONFIG_KEY].propName).to.equal('theme')
       })
@@ -213,68 +213,75 @@ describe('themed', () => {
   })
 
   describe('component', () => {
-    it('handles a undefined theme', () => {
+    test('handles a undefined theme', () => {
       const { getTheme } = setup({ theme: context.Foo })
       expect(getTheme()).to.eql(context.Foo)
     })
 
-    it('handles a null theme', () => {
+    test('handles a null theme', () => {
       const { getTheme } = setup({ theme: context.Foo, props: { theme: null } })
       expect(getTheme()).to.eql(context.Foo)
     })
 
-    it('handles a object theme', () => {
+    test('handles a object theme', () => {
       const { getTheme } = setup({ theme: context.Foo, props: { theme: context.Bar } })
       expect(getTheme()).to.eql({ ...context.Foo, ...context.Bar })
     })
 
-    it('handles a string theme', () => {
+    test('handles a string theme', () => {
       const { getTheme } = setup({ theme: context.Foo, props: { theme: 'Bar' } })
       expect(getTheme()).to.eql({ ...context.Foo, ...context.Bar })
     })
 
-    it('handles an array theme', () => {
+    test('handles an array theme', () => {
       const { getTheme } = setup({ theme: context.Foo, props: { theme: ['Bar'] } })
       expect(getTheme()).to.eql({ ...context.Foo, Bar: context.Bar })
     })
 
-    it('handles a function theme', () => {
+    test('handles a function theme', () => {
       const spy = sinon.spy(() => context.Bar)
       const { getTheme } = setup({ theme: context.Foo, props: { theme: spy } })
       expect(getTheme()).to.equal(context.Bar)
       expect(spy.calledWith(context.Foo, context)).to.equal(true)
     })
 
-    it('handles child props', () => {
+    test('handles child props', () => {
       const { wrapper } = setup({ props: { bar: 'bar' } })
       expect(wrapper.find(Foo).prop('bar')).to.equal('bar')
     })
 
-    it('handles a "childRef" prop', () => {
+    test('handles a "childRef" prop', () => {
       const Bar = themed()(Foo)
       const spy = sinon.spy()
       mount(createElement(Bar, { childRef: spy }))
       expect(spy.called).to.equal(true)
     })
 
-    it('caches themes', () => {
-      const { wrapper } = setup()
-      const spy = sinon.spy(wrapper.instance(), 'buildTheme')
+    test('caches themes', () => {
+      const { wrapper, themewrapper } = setup()
+      const spy = sinon.spy(themewrapper().instance(), 'buildTheme')
+
       wrapper.setProps({})
       expect(spy.callCount).to.equal(0)
     })
 
-    it('builds theme when theme prop updates', () => {
-      const { wrapper, getTheme } = setup({ theme: context.Foo })
-      const spy = sinon.spy(wrapper.instance(), 'buildTheme')
-      wrapper.setProps({ theme: context.Bar })
+    test('builds theme when theme prop updates', () => {
+      const {
+        wrapper,
+        themewrapper,
+        getTheme,
+        Themed,
+      } = setup({ theme: context.Foo })
+      const spy = sinon.spy(themewrapper().instance(), 'buildTheme')
+      wrapper.setProps({ children: <Themed theme={ context.Bar }/> })
+
       expect(spy.callCount).to.equal(1)
       expect(getTheme()).to.eql({ ...context.Foo, ...context.Bar })
     })
   })
 
   describe('extend', () => {
-    it('returns a configured decorator', () => {
+    test('returns a configured decorator', () => {
       const propName = 'styles'
       const styled = themed.extend({ propName })
       expect(styled.defaults.propName).to.equal(propName)

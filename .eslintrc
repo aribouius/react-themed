@@ -9,12 +9,16 @@
     "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],
     "react/jsx-uses-react": 1,
     "react/jsx-uses-vars": 1,
+    "import/prefer-default-export": 0,
+    "no-plusplus": 0,
+    "template-curly-spacing": 0,
+    "comma-dangle": 0
   },
   "plugins": [
     "react"
   ],
   "env": {
-    "mocha": true,
+    "jest": true,
     "browser": true,
     "node": true
   }

@@ -2,7 +2,7 @@ import { expect } from 'chai'
 import compose from './compose'
 
 describe('compose', () => {
-  it('composes themes', () => {
+  test('composes themes', () => {
     const theme1 = { foo: 'foo', bar: 'bar' }
     const theme2 = { foo: 'bar', baz: 'baz' }
     const result = compose({}, theme1, theme2)
@@ -13,7 +13,7 @@ describe('compose', () => {
     })
   })
 
-  it('composes themes into a target object', () => {
+  test('composes themes into a target object', () => {
     const target = {}
     const theme1 = { foo: 'foo', bar: 'bar' }
     const theme2 = { foo: 'bar', baz: 'baz' }
@@ -21,7 +21,7 @@ describe('compose', () => {
     expect(result).to.equal(target)
   })
 
-  it('composes themes recursively', () => {
+  test('composes themes recursively', () => {
     const theme1 = { foo: { bar: { baz: 'baz' } } }
     const theme2 = { foo: { bar: { baz: 'bat' } } }
     const result = compose({}, theme1, theme2)
@@ -34,14 +34,14 @@ describe('compose', () => {
     })
   })
 
-  it('composes theme functions', () => {
+  test('composes theme functions', () => {
     const theme1 = { foo: () => '.foo{}' }
     const theme2 = { foo: () => '.bar{}' }
     const result = compose({}, theme1, theme2)
     expect(result.foo()).to.eql('.foo{}.bar{}')
   })
 
-  it('only composes similar value types', () => {
+  test('only composes similar value types', () => {
     const theme1 = { foo: 'foo', bar: 'bar' }
     const theme2 = { foo: {}, bar: () => {} }
     const result = compose({}, theme1, theme2)
@@ -51,7 +51,7 @@ describe('compose', () => {
     })
   })
 
-  it('strips out null values', () => {
+  test('strips out null values', () => {
     const theme1 = { foo: null }
     const theme2 = { bar: 'bar' }
     const result = compose({}, theme1, theme2)

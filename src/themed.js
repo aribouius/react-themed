@@ -1,7 +1,8 @@
-import { createElement, Component, PureComponent } from 'react'
+import React, { createElement, Component } from 'react'
+import shallowEqual from 'fbjs/lib/shallowEqual'
 import PropTypes from 'prop-types'
 import hoist from 'hoist-non-react-statics'
-import { CONTEXT_KEY, CONFIG_KEY } from './const'
+import { ThemeConsumer, CONFIG_KEY } from './const'
 import compose from './compose'
 
 const mergeProps = (
@@ -19,27 +20,28 @@ const pluck = (theme, keys) => (
   }, {})
 )
 
-const match = (theme, regex) => (
-  Object.keys(theme).reduce((acc, key) => {
-    if (key.match(regex)) acc[key] = theme[key]
-    return acc
-  }, {})
-)
+const match = (theme, regex) => {
+  const acc = {}
+
+  for (let i = 0, keys = Object.keys(theme); i < keys.length; i++) {
+    const key = keys[i]
+
+    // Test is much faster than .match
+    if (regex.test(key)) {
+      acc[key] = theme[key]
+    }
+  }
+
+  return acc
+}
 
 const create = (component, config) => {
-  const BaseComponent = config.pure
-    ? PureComponent
-    : Component
-
-  class Themed extends BaseComponent {
+  class Themed extends Component {
     static [CONFIG_KEY] = config
 
     static displayName = `Themed(${component.displayName || component.name})`
-    static WrappedComponent = component
 
-    static contextTypes = {
-      [CONTEXT_KEY]: PropTypes.object,
-    }
+    static WrappedComponent = component
 
     static propTypes = {
       childRef: PropTypes.func,
@@ -51,52 +53,46 @@ const create = (component, config) => {
       ]),
     }
 
-    constructor(props, context) {
-      super(props, context)
-      this.buildTheme(props, context)
-    }
+    rebuild = undefined
 
-    componentWillUpdate(props, state, context) {
-      if (this.propsChanged(props) || this.contextChanged(context)) {
-        this.buildTheme(props, context)
+    shouldComponentUpdate(nextProps) {
+      // Theme is simple object key-value pair, no need to do more advanced object comparison
+      if (!shallowEqual(this.props[config.propName], nextProps[config.propName])) {
+        this.rebuild = true
+        return true
       }
-    }
 
-    propsChanged(props) {
-      return this.props[config.propName] !== props[config.propName]
-    }
-
-    contextChanged(context) {
-      return this.context[CONTEXT_KEY] !== context[CONTEXT_KEY]
+      this.rebuild = false
+      return true
     }
 
     compose(target, theme) {
       return theme ? config.compose(target || {}, theme) : theme
     }
 
-    buildTheme(props, context) {
+    buildTheme(props, shared) {
       this.theme = undefined
-
       const themes = config.themes.slice()
-      const shared = context[CONTEXT_KEY] || {}
 
       if (props[config.propName]) {
         themes.push(props[config.propName])
       }
 
-      themes.forEach(theme => {
-        if (Array.isArray(theme)) {
-          this.theme = this.compose(this.theme, pluck(shared, theme))
-        } else if (typeof theme === 'string') {
-          this.theme = this.compose(this.theme, theme === '*' ? shared : shared[theme])
-        } else if (theme instanceof RegExp) {
-          this.theme = this.compose(this.theme, match(shared, theme))
-        } else if (typeof theme === 'object') {
-          this.theme = this.compose(this.theme, theme)
-        } else if (typeof theme === 'function') {
-          this.theme = theme(this.theme, shared)
+      for (let i = 0; i < themes.length; ++i) {
+        const current = themes[i]
+
+        if (Array.isArray(current)) {
+          this.theme = this.compose(this.theme, pluck(shared, current))
+        } else if (typeof current === 'string') {
+          this.theme = this.compose(this.theme, current === '*' ? shared : shared[current])
+        } else if (current instanceof RegExp) {
+          this.theme = this.compose(this.theme, match(shared, current))
+        } else if (typeof current === 'object') {
+          this.theme = this.compose(this.theme, current)
+        } else if (typeof current === 'function') {
+          this.theme = current(this.theme, shared)
         }
-      })
+      }
     }
 
     render() {
@@ -105,10 +101,20 @@ const create = (component, config) => {
         ...props
       } = this.props
 
-      return createElement(component, config.mergeProps(props, {
-        [config.propName]: this.theme,
-        ref: childRef,
-      }))
+      return (
+        <ThemeConsumer>
+          {shared => {
+            if (typeof this.rebuild === 'undefined' || this.rebuild) {
+              this.buildTheme(props, shared)
+            }
+
+            return createElement(component, config.mergeProps(props, {
+              [config.propName]: this.theme,
+              ref: childRef,
+            }))
+          }}
+        </ThemeConsumer>
+      )
     }
   }
 

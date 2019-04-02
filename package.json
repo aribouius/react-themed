@@ -1,7 +1,7 @@
 {
   "name": "@rentpath/react-themed",
   "description": "A flexible library for styling React components",
-  "version": "4.0.4",
+  "version": "4.0.3",
   "main": "./lib/index.js",
   "module": "es/index.js",
   "author": "Ari Bouius <aribouius@gmail.com> (http://github.com/aribouius)",

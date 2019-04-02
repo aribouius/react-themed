@@ -70,7 +70,7 @@ const create = (component, config) => {
       return theme ? config.compose(target || {}, theme) : theme
     }
 
-    buildTheme(props, shared) {
+    buildTheme(props, shared = {}) {
       this.theme = undefined
       const themes = config.themes.slice()
 

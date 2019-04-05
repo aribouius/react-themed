@@ -56,12 +56,12 @@ const create = (component, config) => {
     rebuild = undefined
 
     shouldComponentUpdate(nextProps) {
-      this.rebuild = (!shallowEqual(this.props[config.propName], nextProps[config.propName]))
+      this.rebuild = !shallowEqual(this.props[config.propName], nextProps[config.propName])
 
       const { [config.propName]: propsPropName, ...restProps } = this.props
       const { [config.propName]: nextPropsPropName, ...restNextProps } = nextProps
 
-      return shallowEqual(restProps, restNextProps)
+      return !shallowEqual(restProps, restNextProps)
     }
 
     compose(target, theme) {

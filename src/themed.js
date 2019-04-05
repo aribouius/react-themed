@@ -56,14 +56,12 @@ const create = (component, config) => {
     rebuild = undefined
 
     shouldComponentUpdate(nextProps) {
-      // Theme is simple object key-value pair, no need to do more advanced object comparison
-      if (!shallowEqual(this.props[config.propName], nextProps[config.propName])) {
-        this.rebuild = true
-        return true
-      }
+      this.rebuild = (!shallowEqual(this.props[config.propName], nextProps[config.propName]))
 
-      this.rebuild = false
-      return true
+      const { [config.propName]: propsPropName, ...restProps } = this.props
+      const { [config.propName]: nextPropsPropName, ...restNextProps } = nextProps
+
+      return shallowEqual(restProps, restNextProps)
     }
 
     compose(target, theme) {
